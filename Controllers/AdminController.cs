@@ -7,7 +7,11 @@ using TechStore.Repositories;
 
 namespace TechStore.Controllers
 {
-    [Authorize(Roles="Admin,Manager")]
+    /// <summary>
+    /// ADMIN CONTROLLER - Chỉ Admin có quyền (System Admin)
+    /// Quản lý: Users, Roles, Vouchers, Reports, Settings
+    /// </summary>
+    [Authorize(Roles="Admin")]
     public class AdminController : Controller
     {
         private readonly IProductRepository  _productRepo;
@@ -19,39 +23,50 @@ namespace TechStore.Controllers
         public AdminController(IProductRepository p, ICategoryRepository c, UserManager<ApplicationUser> um, RoleManager<IdentityRole> rm, ApplicationDbContext db)
         { _productRepo=p; _categoryRepo=c; _um=um; _rm=rm; _db=db; }
 
+        /// <summary>
+        /// Admin Dashboard - Hiển thị thống kê hệ thống toàn bộ
+        /// </summary>
         public async Task<IActionResult> Dashboard()
         {
             var products   = await _productRepo.GetAllAsync();
             var categories = await _categoryRepo.GetAllAsync();
             var users      = _um.Users.ToList();
             var orders     = await _db.Orders.ToListAsync();
+            var validOrders = orders.Where(o => o.Status != "Đã hủy").ToList();
 
-            int adminCount=0;
-            foreach(var u in users) if(await _um.IsInRoleAsync(u,"Admin")) adminCount++;
+            int adminCount = 0;
+            foreach(var u in users) 
+                if(await _um.IsInRoleAsync(u, "Admin")) 
+                    adminCount++;
 
             ViewBag.TotalProducts   = products.Count();
             ViewBag.TotalCategories = categories.Count();
             ViewBag.TotalUsers      = users.Count;
             ViewBag.TotalAdmins     = adminCount;
-            ViewBag.TotalOrders     = orders.Count;
-            ViewBag.TotalRevenue    = orders.Where(o=>o.Status!="Đã hủy").Sum(o=>o.Total);
-            ViewBag.PendingOrders   = orders.Count(o=>o.Status=="Chờ xác nhận");
+            ViewBag.TotalOrders     = validOrders.Count;
+            ViewBag.TotalRevenue    = validOrders.Sum(o => o.Total);
+            ViewBag.PendingOrders   = orders.Count(o => o.Status == "Chờ xác nhận");
             ViewBag.RecentProducts  = products.TakeLast(5).Reverse();
-            ViewBag.RecentOrders    = orders.OrderByDescending(o=>o.OrderDate).Take(5);
+            ViewBag.RecentOrders    = orders.OrderByDescending(o => o.OrderDate).Take(5);
             ViewBag.Users           = users.Take(6);
 
             // Doanh thu 7 ngày gần nhất (cho biểu đồ)
-            var last7 = Enumerable.Range(0,7).Select(i=>DateTime.Today.AddDays(-6+i)).ToList();
-            var revenueData = last7.Select(d=> orders.Where(o=>o.OrderDate.Date==d&&o.Status!="Đã hủy").Sum(o=>(double)o.Total)).ToList();
-            var labels = last7.Select(d=>d.ToString("dd/MM")).ToList();
+            var last7 = Enumerable.Range(0, 7).Select(i => DateTime.Today.AddDays(-6 + i)).ToList();
+            var revenueData = last7.Select(d => 
+                (double)validOrders
+                    .Where(o => o.OrderDate.Date == d)
+                    .Sum(o => o.Total)
+            ).ToList();
+            var labels = last7.Select(d => d.ToString("dd/MM")).ToList();
             ViewBag.ChartLabels  = System.Text.Json.JsonSerializer.Serialize(labels);
             ViewBag.ChartRevenue = System.Text.Json.JsonSerializer.Serialize(revenueData);
 
-            return View();
+            return View("Dashboard");
         }
 
-        // Quản lý Users - chỉ Admin
-        [Authorize(Roles="Admin")]
+        /// <summary>
+        /// Quản lý Users - ADMIN ONLY
+        /// </summary>
         public async Task<IActionResult> Users()
         {
             var users = _um.Users.ToList();
@@ -61,7 +76,6 @@ namespace TechStore.Controllers
             return View(list);
         }
 
-        [HttpPost, ValidateAntiForgeryToken, Authorize(Roles="Admin")]
         public async Task<IActionResult> SetRole(string userId, string role)
         {
             var user = await _um.FindByIdAsync(userId);
@@ -73,7 +87,7 @@ namespace TechStore.Controllers
             return RedirectToAction(nameof(Users));
         }
 
-        [HttpPost, ValidateAntiForgeryToken, Authorize(Roles="Admin")]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteUser(string userId)
         {
             var user = await _um.FindByIdAsync(userId);
@@ -85,11 +99,12 @@ namespace TechStore.Controllers
             return RedirectToAction(nameof(Users));
         }
 
-        // Quản lý Voucher
-        [Authorize(Roles="Admin")]
-        public async Task<IActionResult> Vouchers() => View(await _db.Vouchers.OrderByDescending(v=>v.Id).ToListAsync());
+        /// <summary>
+        /// Quản lý Voucher - ADMIN ONLY
+        /// </summary>
+        public async Task<IActionResult> Vouchers() => View(await _db.Vouchers.OrderByDescending(v => v.Id).ToListAsync());
 
-        [HttpPost, ValidateAntiForgeryToken, Authorize(Roles="Admin")]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> AddVoucher(string code, int discountPercent, int usageLimit, int days)
         {
             _db.Vouchers.Add(new Voucher{ Code=code.ToUpper(), DiscountPercent=discountPercent, UsageLimit=usageLimit, ExpiryDate=DateTime.Now.AddDays(days), IsActive=true });
@@ -98,7 +113,7 @@ namespace TechStore.Controllers
             return RedirectToAction(nameof(Vouchers));
         }
 
-        [HttpPost, ValidateAntiForgeryToken, Authorize(Roles="Admin")]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleVoucher(int id)
         {
             var v = await _db.Vouchers.FindAsync(id);

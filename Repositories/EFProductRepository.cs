@@ -31,6 +31,7 @@ namespace TechStore.Repositories
 
             var total = await query.CountAsync();
             var items = await query
+                .OrderByDescending(p => p.Id)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -55,6 +56,12 @@ namespace TechStore.Repositories
             _context.Products.Update(product);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<IEnumerable<Product>?> GetByCategoryAsync(string categoryName)
+            => await _context.Products
+                .Include(p => p.Category)
+                .Where(p => p.Category.Name == categoryName)
+                .ToListAsync();
 
         public async Task DeleteAsync(int id)
         {

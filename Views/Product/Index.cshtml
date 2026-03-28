@@ -1,182 +1,165 @@
 @model TechStore.ViewModels.PagedViewModel<TechStore.Models.Product>
-@{ ViewData["Title"] = "Sản phẩm"; }
+
+@{
+    ViewData["Title"] = "Sản Phẩm";
+}
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+    <div class="container">
+        <h1>🛍️ Cửa Hàng Sản Phẩm</h1>
+    </div>
+</div>
+
+<div class="container-fluid py-5">
+    <div class="row g-5">
+        
+        <!-- LEFT: SIDEBAR FILTERS -->
+        <div class="col-lg-3 mb-4">
+            <div class="card-dark p-4" style="position: sticky; top: 120px; border-radius: var(--r);">
+                
+                <h5 class="section-title mb-4">🔍 Bộ Lọc</h5>
+                
+                <form method="get" id="filterForm">
+                    
+                    <!-- Category Filter -->
+                    <div class="mb-4">
+                        <h6 style="font-weight: 600; margin-bottom: 12px;">Danh Mục</h6>
+                        @foreach(var cat in ViewBag.Categories ?? new List<TechStore.Models.Category>())
+                        {
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="category" value="@cat.Name" 
+                                       id="cat_@cat.Id" 
+                                       @(Model.CategoryFilter == cat.Name ? "checked" : "")
+                                       onchange="document.getElementById('filterForm').submit();" />
+                                <label class="form-check-label" for="cat_@cat.Id" style="cursor: pointer;">
+                                    @cat.Name
+                                </label>
+                            </div>
+                        }
+                    </div>
+                    
+                    <!-- Sort -->
+                    <div class="mb-4">
+                        <h6 style="font-weight: 600; margin-bottom: 12px;">Sắp Xếp</h6>
+                        <select name="sortBy" class="form-control-dark w-100" onchange="document.getElementById('filterForm').submit();">
+                            <option value="newest">Mới nhất</option>
+                            <option value="price-asc">Giá: Thấp → Cao</option>
+                            <option value="price-desc">Giá: Cao → Thấp</option>
+                            <option value="rating">Đánh giá cao nhất</option>
+                        </select>
+                    </div>
+                    
+                    <button type="reset" class="btn-secondary-custom w-100">↻ Đặt lại</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- RIGHT: PRODUCTS GRID -->
+        <div class="col-lg-9">
+            
+            <!-- Header & Search -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+                <h4 style="margin: 0;">Sản Phẩm (@Model.TotalItems)</h4>
+                <form method="get" style="display: flex; gap: 8px; flex-grow: 1; max-width: 400px;">
+                    <input type="text" name="search" class="form-control-dark flex-grow-1" 
+                           placeholder="Tìm kiếm sản phẩm..." value="@Model.Search" />
+                    <button type="submit" class="btn-primary-custom" style="border: none; cursor: pointer;">
+                        🔍
+                    </button>
+                </form>
+            </div>
+            
+            <!-- Products Grid -->
+            @if (Model.Items.Count() > 0)
+            {
+                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-2 row-cols-lg-3 g-4 mb-5">
+                    @foreach(var product in Model.Items)
+                    {
+                        <div class="col" data-aos="fade-up">
+                            @await Html.PartialAsync("_ProductCard", product)
+                        </div>
+                    }
+                </div>
+                
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav style="margin-top: 40px; display: flex; justify-content: center;">
+                        <ul class="pagination">
+                            @if (Model.Page > 1)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1@(Model.CategoryFilter != null ? $"&category={Model.CategoryFilter}" : "")">« Đầu</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=@(Model.Page - 1)@(Model.CategoryFilter != null ? $"&category={Model.CategoryFilter}" : "")">‹ Trước</a>
+                                </li>
+                            }
+                            
+                            @for (int i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+                            {
+                                @if (i == Model.Page)
+                                {
+                                    <li class="page-item active">
+                                        <span class="page-link" style="background: var(--accent); border-color: var(--accent); color: #05080f;">@i</span>
+                                    </li>
+                                }
+                                else
+                                {
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=@i@(Model.CategoryFilter != null ? $"&category={Model.CategoryFilter}" : "")">@i</a>
+                                    </li>
+                                }
+                            }
+                            
+                            @if (Model.Page < Model.TotalPages)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=@(Model.Page + 1)@(Model.CategoryFilter != null ? $"&category={Model.CategoryFilter}" : "")">Sau ›</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=@Model.TotalPages@(Model.CategoryFilter != null ? $"&category={Model.CategoryFilter}" : "")">Cuối »</a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            }
+            else
+            {
+                <div style="text-align: center; padding: 60px 20px;">
+                    <i class="fa-solid fa-inbox" style="font-size: 3rem; color: var(--muted); opacity: 0.5; margin-bottom: 16px; display: block;"></i>
+                    <p class="text-muted" style="font-size: 1.1rem;">Không tìm thấy sản phẩm nào</p>
+                    <a href="/Product" class="btn-secondary-custom" style="display: inline-block; text-decoration: none; margin-top: 16px;">← Quay Lại</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
 
 <style>
-.filter-bar{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:24px;}
-.s-wrap{position:relative;flex:1;min-width:200px;}
-.s-wrap i{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.85rem;}
-.live-search{width:100%;background:var(--bg2);border:1.5px solid var(--border);color:var(--text);border-radius:var(--r-sm);padding:9px 14px 9px 36px;font-family:var(--font-body);font-size:.88rem;outline:none;transition:all .2s;}
-.live-search:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,255,255,.08);}
-.live-search::placeholder{color:var(--muted);}
-.tbl-wrap{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.pagination .page-link {
+    background: var(--card);
+    border-color: var(--border);
+    color: var(--muted);
+    text-decoration: none;
+    transition: all .2s;
+}
+
+.pagination .page-link:hover {
+    background: var(--card2);
+    color: var(--accent);
+    border-color: var(--border-accent);
+}
+
+.pagination .page-item.active .page-link {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #05080f;
+}
+
+@@media (max-width: 768px) {
+    .col-lg-3 { margin-bottom: 2rem; }
+}
 </style>
-
-<div class="page-header animate-in">
-  <div class="container">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-      <div>
-        <h1><i class="fa-solid fa-laptop me-2 text-accent"></i>Sản phẩm</h1>
-        <p style="color:var(--muted);font-size:.88rem;margin-top:4px;">Danh sách toàn bộ sản phẩm</p>
-      </div>
-      @if(User.IsInRole("Admin")||User.IsInRole("Manager")){
-        <a href="/Product/Add" class="btn-primary-custom"><i class="fa-solid fa-plus"></i>Thêm sản phẩm</a>
-      }
-    </div>
-  </div>
-</div>
-
-<div class="container py-5">
-  <div class="filter-bar animate-in-delay">
-    <div class="s-wrap">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input type="text" id="liveSearch" class="live-search" placeholder="Tìm theo tên sản phẩm..."/>
-    </div>
-    <span style="color:var(--muted);font-size:.85rem;white-space:nowrap;">
-        <span id="countTxt">@Model.TotalItems</span> sản phẩm
-    </span>
-  </div>
-
-  <!-- Filter Sidebar -->
-  <div class="row mb-4">
-    <div class="col-md-3">
-      <div class="card-dark p-3">
-        <h6 class="mb-3" style="font-family:var(--font-head);">Lọc theo</h6>
-        <div>
-          <input type="text" class="live-search mb-3 w-100" id="filterSearch" placeholder="Tìm danh mục..." oninput="filterCategories()"/>
-          <div id="filterCats">
-            @foreach(var cat in ViewBag.Categories as IEnumerable<TechStore.Models.Category> ?? Enumerable.Empty<TechStore.Models.Category>())
-            {
-              <label class="d-block mb-2">
-                <input type="checkbox" value="@cat.Name" onchange="applyFilters()" /> @cat.Name
-              </label>
-            }
-          </div>
-        </div>
-        <hr>
-        <button class="btn-secondary-custom w-100 mb-2" onclick="clearFilters()">Xóa bộ lọc</button>
-      </div>
-    </div>
-    <div class="col-md-9">
-      <div class="d-flex justify-content-end mb-3">
-        <form method="get" class="d-flex gap-2">
-          <input name="search" value="@Model.Search" class="live-search" placeholder="Tìm kiếm..." style="width:250px;"/>
-          <input name="category" value="@Model.CategoryFilter" class="live-search" placeholder="Danh mục" style="width:180px;"/>
-          <button type="submit" class="btn-primary-custom">Lọc</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <div class="tbl-wrap animate-in-delay2">
-    <table class="table-dark-custom" id="prodTable">
-      <thead>
-        <tr>
-          <th style="width:48px;">#</th>
-          <th style="width:56px;">Ảnh</th>
-          <th>Tên sản phẩm</th>
-          <th>Danh mục</th>
-          <th>Giá</th>
-          <th style="text-align:right;">Thao tác</th>
-        </tr>
-      </thead>
-      <tbody>
-        @{int i = (Model.Page - 1) * Model.PageSize + 1;}
-        @foreach(var item in Model.Items){
-          <tr data-name="@item.Name.ToLower()">
-            <td style="color:var(--muted);font-size:.8rem;">@i</td>
-            @{i++;}
-
-            <td>
-
-              @if(!string.IsNullOrEmpty(item.ImageUrl)){
-                <img src="@item.ImageUrl" class="product-img-preview" alt="@item.Name"/>
-              } else {
-                <div style="width:44px;height:44px;background:var(--card2);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-image" style="color:rgba(255,255,255,.15);font-size:.8rem;"></i></div>
-              }
-            </td>
-            <td>
-              <div style="font-weight:600;color:var(--text);font-size:.9rem;">@item.Name</div>
-              @if(!string.IsNullOrEmpty(item.Description)){
-                <div style="font-size:.78rem;color:var(--muted);margin-top:2px;max-width:300px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">@item.Description</div>
-              }
-            </td>
-            <td>
-              @if(item.Category!=null){<span class="badge-cat">@item.Category.Name</span>}
-              else{<span style="color:var(--muted);font-size:.82rem;">—</span>}
-            </td>
-            <td><span style="font-family:var(--font-head);font-weight:700;font-size:.95rem;color:var(--accent);">@item.Price.ToString("N0")₫</span></td>
-            <td style="text-align:right;">
-              <div class="d-flex gap-2 justify-content-end">
-                <a href="/Product/Display/@item.Id" class="btn-view-custom"><i class="fa-solid fa-eye"></i></a>
-                @if(User.IsInRole("Admin")||User.IsInRole("Manager")){
-                  <a href="/Product/Update/@item.Id" class="btn-edit-custom"><i class="fa-solid fa-pen"></i></a>
-                }
-                @if(User.IsInRole("Admin")){
-                  <a href="/Product/Delete/@item.Id" class="btn-danger-custom"><i class="fa-solid fa-trash"></i></a>
-                }
-              </div>
-            </td>
-          </tr>
-
-        }
-      </tbody>
-
-    </table>
-
-  <!-- Pagination -->
-  @if(Model.TotalPages > 1){
-    <nav class="mt-4">
-      <ul class="pagination justify-content-center">
-        @if(Model.HasPrevious){
-          <li class="page-item"><a class="page-link" href="?page=@Model.PreviousPage&search=@Model.Search&category=@Model.CategoryFilter">Trước</a></li>
-        }
-        @for(int p = Math.Max(1, Model.Page - 2); p <= Math.Min(Model.TotalPages, Model.Page + 2); p++){
-          <li class="page-item @(p == Model.Page ? "active" : "")"><a class="page-link" href="?page=@p&search=@Model.Search&category=@Model.CategoryFilter">@p</a></li>
-        }
-        @if(Model.HasNext){
-          <li class="page-item"><a class="page-link" href="?page=@Model.NextPage&search=@Model.Search&category=@Model.CategoryFilter">Sau</a></li>
-        }
-      </ul>
-    </nav>
-  }
-
-@if(!Model.Items.Any()){
-      <div style="text-align:center;padding:60px 20px;color:var(--muted);">
-        <i class="fa-solid fa-box-open" style="font-size:2.5rem;margin-bottom:14px;display:block;color:rgba(255,255,255,.08);"></i>
-        Chưa có sản phẩm nào.
-        @if(User.IsInRole("Admin")||User.IsInRole("Manager")){
-          <a href="/Product/Add" class="text-accent">Thêm ngay</a>
-        }
-      </div>
-    }
-  </div>
-</div>
-
-@section Scripts {
-<script>
-const inp=document.getElementById('liveSearch'),rows=document.querySelectorAll('#prodTable tbody tr'),cnt=document.getElementById('countTxt');
-inp.addEventListener('input',function(){
-  const q=this.value.toLowerCase().trim();let v=0;
-  rows.forEach(r=>{const m=r.dataset.name.includes(q);r.style.display=m?'':'none';if(m)v++;});
-  cnt.textContent=v;
-});
-
-function applyFilters(){
-  const catChecks=document.querySelectorAll('#filterCats input:checked'),catNames=Array.from(catChecks).map(c=>c.value);
-  // Client-side filter or redirect
-  if(catNames.length) window.location.href=`?category=${encodeURIComponent(catNames[0])}`;
-}
-
-function clearFilters(){
-  window.location.href='/Product';
-}
-
-function filterCategories(){
-  const q=document.getElementById('filterSearch').value.toLowerCase();
-  document.querySelectorAll('#filterCats label').forEach(l=>{
-    const txt=l.textContent.toLowerCase();
-    l.style.display=txt.includes(q)?'block':'none';
-  });
-}
-</script>
-}

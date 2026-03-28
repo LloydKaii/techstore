@@ -32,6 +32,9 @@ namespace TechStore.Models
         // Navigation properties
         public Category? Category { get; set; }
         public List<ProductImage>? Images { get; set; }
+
+        // Helper property for views
+        public string CategoryName => Category?.Name ?? "Khác";
     }
 }
 

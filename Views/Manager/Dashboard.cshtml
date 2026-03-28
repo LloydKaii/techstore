@@ -1,0 +1,118 @@
+@{ ViewData["Title"] = "Manager Dashboard"; }
+<style>
+.sc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:22px;display:flex;align-items:center;gap:16px;transition:all .3s;}
+.sc:hover{transform:translateY(-4px);border-color:var(--border-accent);box-shadow:0 12px 40px rgba(0,0,0,.4);}
+.si{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+.sv{font-family:var(--font-head);font-size:1.7rem;font-weight:800;line-height:1;}
+.sl{color:var(--muted);font-size:.8rem;margin-top:3px;}
+.qb{background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:12px 15px;display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--text);transition:all .2s;font-size:.88rem;}
+.qb:hover{border-color:var(--border-accent);color:var(--accent);}
+.table-dark-custom{width:100%;border-collapse:collapse;font-size:.86rem;color:var(--text);padding:0;}
+.table-dark-custom thead{background:var(--card2);border-bottom:1px solid var(--border);}
+.table-dark-custom th{padding:14px 18px;text-align:left;font-weight:700;color:var(--accent);text-transform:uppercase;font-size:.75rem;letter-spacing:.5px;}
+.table-dark-custom td{padding:14px 18px;border-bottom:1px solid var(--border);}
+.table-dark-custom tbody tr:hover{background:rgba(0,255,255,.03);}
+.btn-secondary-custom{background:rgba(255,255,255,.08);border:1px solid var(--border);color:var(--text);padding:8px 16px;border-radius:var(--r-sm);text-decoration:none;transition:all .2s;font-size:.8rem;font-weight:600;}
+.btn-secondary-custom:hover{border-color:var(--border-accent);color:var(--accent);}
+</style>
+<div class="page-header animate-in" style="z-index:2;">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h1><i class="fa-solid fa-chart-pie me-2" style="color:#fbbf24;"></i>Manager Dashboard</h1>
+        <p style="color:var(--muted);font-size:.88rem;margin-top:4px;">@DateTime.Now.ToString("dddd, dd/MM/yyyy")</p>
+      </div>
+      <span style="background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2);padding:6px 16px;border-radius:99px;font-size:.8rem;font-weight:700;">
+        <i class="fa-solid fa-briefcase me-1"></i>MANAGER
+      </span>
+    </div>
+  </div>
+</div>
+<div class="container py-4" style="position:relative;z-index:2;">
+  <div class="row g-3 mb-4 animate-in">
+    <div class="col-6 col-lg-3"><div class="sc"><div class="si" style="background:rgba(0,255,255,.1);color:var(--accent);"><i class="fa-solid fa-laptop"></i></div><div><div class="sv">@ViewBag.TotalProducts</div><div class="sl">Sản phẩm</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="sc"><div class="si" style="background:rgba(52,211,153,.1);color:var(--success);"><i class="fa-solid fa-bag-shopping"></i></div><div><div class="sv">@ViewBag.TotalOrders</div><div class="sl">Đơn hàng</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="sc"><div class="si" style="background:rgba(251,191,36,.1);color:var(--warning);"><i class="fa-solid fa-clock"></i></div><div><div class="sv">@ViewBag.PendingOrders</div><div class="sl">Chờ xác nhận</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="sc"><div class="si" style="background:rgba(123,94,167,.12);color:#c4aff0;"><i class="fa-solid fa-sack-dollar"></i></div><div><div class="sv" style="font-size:1.1rem;">@(((decimal)ViewBag.TotalRevenue).ToString("N0"))₫</div><div class="sl">Doanh thu</div></div></div></div>
+  </div>
+  <div class="row g-4">
+    <div class="col-lg-8 animate-in-delay">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:22px;">
+        <h6 style="font-family:var(--font-head);font-weight:700;margin-bottom:18px;"><i class="fa-solid fa-chart-line text-accent me-2"></i>Doanh thu 7 ngày gần nhất</h6>
+        <canvas id="revChart" height="100"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-4 animate-in-delay2">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:22px;">
+        <h6 style="font-family:var(--font-head);font-weight:700;margin-bottom:14px;"><i class="fa-solid fa-bolt" style="color:#fbbf24;" class="me-2"></i>Thao tác nhanh</h6>
+        <div class="d-flex flex-column gap-2">
+          <a class="qb" href="/Manager/Products"><i class="fa-solid fa-list" style="color:var(--accent);width:18px;"></i>Quản lý sản phẩm</a>
+          <a class="qb" href="/Manager/Orders"><i class="fa-solid fa-bag-shopping" style="color:var(--success);width:18px;"></i>Quản lý đơn hàng</a>
+          <a class="qb" href="/Manager/Categories"><i class="fa-solid fa-tags" style="color:var(--accent2);width:18px;"></i>Danh mục</a>
+          <a class="qb" href="/Manager/SalesReport"><i class="fa-solid fa-chart-bar" style="color:#fbbf24;width:18px;"></i>Báo cáo bán hàng</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 animate-in-delay">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
+        <div style="padding:16px 22px;border-bottom:1px solid var(--border);background:var(--card2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <h6 style="font-family:var(--font-head);font-weight:700;margin:0;"><i class="fa-solid fa-star" style="color:#fbbf24;" class="me-2"></i>Sản phẩm bán chạy nhất</h6>
+        </div>
+        <div style="padding:0;">
+          @if(ViewBag.TopProducts != null && ((IList<TechStore.Models.Product>)ViewBag.TopProducts).Count > 0){
+            <table class="table-dark-custom">
+              <thead><tr><th>Sản phẩm</th><th>Danh mục</th><th>Giá</th><th>Lượt bán</th></tr></thead>
+              <tbody>
+                @foreach(var p in (IList<TechStore.Models.Product>)ViewBag.TopProducts){
+                  <tr>
+                    <td style="color:var(--accent);font-weight:600;">@p.Name</td>
+                    <td>@p.Category?.Name</td>
+                    <td style="color:var(--success);">@p.Price.ToString("N0")₫</td>
+                    <td style="color:var(--accent);text-align:center;"><strong>●●●</strong></td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          } else {
+            <div style="padding:20px;text-align:center;color:var(--muted);">
+              <i class="fa-solid fa-inbox" style="font-size:2rem;margin-bottom:10px;display:block;opacity:0.5;"></i>
+              Còn không có dữ liệu bán hàng
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="col-12 animate-in-delay">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
+        <div style="padding:16px 22px;border-bottom:1px solid var(--border);background:var(--card2);display:flex;align-items:center;justify-content:space-between;">
+          <h6 style="font-family:var(--font-head);font-weight:700;margin:0;"><i class="fa-solid fa-clock text-accent me-2"></i>Đơn hàng gần nhất</h6>
+          <a href="/Manager/Orders" class="btn-secondary-custom">Xem tất cả</a>
+        </div>
+        <table class="table-dark-custom">
+          <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Tổng tiền</th><th>Trạng thái</th><th>Ngày</th></tr></thead>
+          <tbody>
+            @foreach(var o in (IEnumerable<TechStore.Models.Order>)ViewBag.RecentOrders){
+              <tr>
+                <td style="font-weight:700;color:var(--accent);">#TS@o.Id.ToString("D4")</td>
+                <td>@o.CustomerName</td>
+                <td style="font-weight:700;color:var(--accent);">@o.Total.ToString("N0")₫</td>
+                <td><span style="background:@(o.Status=="Hoàn thành"?"rgba(52,211,153,.12)":o.Status=="Đã hủy"?"rgba(255,77,109,.1)":"rgba(251,191,36,.1)");color:@(o.Status=="Hoàn thành"?"var(--success)":o.Status=="Đã hủy"?"#ff7a8a":"var(--warning)");padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:700;">@o.Status</span></td>
+                <td style="color:var(--muted);font-size:.82rem;">@o.OrderDate.ToString("dd/MM HH:mm")</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const labels=@Html.Raw(ViewBag.ChartLabels),rev=@Html.Raw(ViewBag.ChartRevenue);
+new Chart(document.getElementById('revChart').getContext('2d'),{
+  type:'line',data:{labels,datasets:[{label:'Doanh thu',data:rev,borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,.06)',borderWidth:2,fill:true,tension:.4,pointBackgroundColor:'#fbbf24',pointRadius:4,pointHoverRadius:7}]},
+  options:{responsive:true,plugins:{legend:{display:false},tooltip:{backgroundColor:'#0f1623',borderColor:'rgba(251,191,36,.2)',borderWidth:1,titleColor:'#e4eaff',bodyColor:'#fbbf24',callbacks:{label:c=>c.parsed.y.toLocaleString('vi-VN')+'₫'}}},scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a6a85'}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#5a6a85',callback:v=>(v/1000000).toFixed(1)+'M'}}}}
+});
+</script>
+}

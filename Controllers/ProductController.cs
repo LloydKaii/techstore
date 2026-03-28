@@ -8,6 +8,12 @@ using TechStore.ViewModels;
 
 namespace TechStore.Controllers
 {
+    /// <summary>
+    /// PRODUCT CONTROLLER - Public Products + Admin Management
+    /// Index/Display: Public (mọi người)
+    /// Add/Edit/Delete: Admin only
+    /// Manager: Sử dụng ManagerController.Products
+    /// </summary>
     public class ProductController : Controller
     {
         private readonly IProductRepository _productRepo;
@@ -21,6 +27,9 @@ namespace TechStore.Controllers
             _ai = ai;
         }
 
+        /// <summary>
+        /// Public: Duyệt sản phẩm
+        /// </summary>
         public async Task<IActionResult> Index(int page = 1, string? category = null, string? search = null)
         {
             var (items, total) = await _productRepo.GetPagedAsync(page, 12, category, search);
@@ -37,6 +46,9 @@ namespace TechStore.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Public: Xem chi tiết sản phẩm
+        /// </summary>
         public async Task<IActionResult> Display(int id)
         {
             var product = await _productRepo.GetByIdAsync(id);
@@ -46,14 +58,17 @@ namespace TechStore.Controllers
             return View(product);
         }
 
-        [Authorize(Roles = "Admin,Manager")]
+        /// <summary>
+        /// Admin only: Thêm sản phẩm
+        /// </summary>
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Add()
         {
             await LoadCategoriesAsync();
             return View();
         }
 
-        [HttpPost, ValidateAntiForgeryToken, Authorize(Roles = "Admin,Manager")]
+        [HttpPost, ValidateAntiForgeryToken, Authorize(Roles = "Admin")]
         public async Task<IActionResult> Add(Product product)
         {
             ModelState.Remove("Category"); ModelState.Remove("Images");
@@ -67,7 +82,10 @@ namespace TechStore.Controllers
             return View(product);
         }
 
-        [Authorize(Roles = "Admin,Manager")]
+        /// <summary>
+        /// Admin only: Cập nhật sản phẩm
+        /// </summary>
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id)
         {
             var p = await _productRepo.GetByIdAsync(id);
@@ -76,7 +94,7 @@ namespace TechStore.Controllers
             return View(p);
         }
 
-        [HttpPost, ValidateAntiForgeryToken, Authorize(Roles = "Admin,Manager")]
+        [HttpPost, ValidateAntiForgeryToken, Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int id, Product product)
         {
             if (id != product.Id) return NotFound();
@@ -96,7 +114,10 @@ namespace TechStore.Controllers
             return View(product);
         }
 
-        [Authorize(Roles = "Admin,Manager")]
+        /// <summary>
+        /// Admin only: Xóa sản phẩm
+        /// </summary>
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var p = await _productRepo.GetByIdAsync(id);
@@ -104,7 +125,7 @@ namespace TechStore.Controllers
             return View(p);
         }
 
-        [HttpPost, ActionName("DeleteConfirmed"), ValidateAntiForgeryToken, Authorize(Roles = "Admin,Manager")]
+        [HttpPost, ActionName("DeleteConfirmed"), ValidateAntiForgeryToken, Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var p = await _productRepo.GetByIdAsync(id);

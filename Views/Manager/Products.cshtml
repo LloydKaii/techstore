@@ -1,0 +1,105 @@
+@model IEnumerable<TechStore.Models.Product>
+@{ ViewData["Title"] = "Quản lý Sản phẩm"; }
+<style>
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;}
+.form-group{margin-bottom:20px;}
+.form-group label{color:var(--text);font-weight:600;margin-bottom:8px;display:block;font-size:.9rem;}
+.form-control{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:var(--r-sm);transition:all .2s;}
+.form-control:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px rgba(0,255,255,.08);}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#00b8d4);color:#05080f;padding:10px 24px;border:none;border-radius:var(--r-sm);font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,255,255,.3);}
+.table-dark-custom{width:100%;border-collapse:collapse;font-size:.86rem;color:var(--text);}
+.table-dark-custom thead{background:var(--card2);border-bottom:1px solid var(--border);}
+.table-dark-custom th{padding:14px;text-align:left;font-weight:700;color:var(--accent);text-transform:uppercase;font-size:.75rem;}
+.table-dark-custom td{padding:14px;border-bottom:1px solid var(--border);}
+.table-dark-custom tbody tr:hover{background:rgba(0,255,255,.03);}
+.btn-sm{padding:6px 12px;font-size:.85rem;text-decoration:none;margin:2px;display:inline-block;border-radius:var(--r-sm);}
+.btn-edit{background:rgba(0,255,255,.1);color:var(--accent);border:1px solid var(--border);}
+.btn-edit:hover{background:rgba(0,255,255,.2);}
+.btn-delete{background:rgba(255,77,109,.1);color:#ff7a8a;border:1px solid var(--border);}
+.btn-delete:hover{background:rgba(255,77,109,.2);}
+</style>
+<div class="page-header animate-in" style="z-index:2;">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h1><i class="fa-solid fa-laptop me-2" style="color:var(--accent);"></i>Quản lý Sản phẩm</h1>
+        <p style="color:var(--muted);font-size:.88rem;margin-top:4px;">@Model.Count() sản phẩm trong hệ thống</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container py-4" style="position:relative;z-index:2;">
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="form-card">
+        <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:20px;"><i class="fa-solid fa-plus me-2"></i>Thêm Sản phẩm</h5>
+        <form action="/Manager/AddProduct" method="post">
+          <div class="form-group">
+            <label>Tên sản phẩm</label>
+            <input type="text" name="name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>Giá</label>
+            <input type="number" name="price" class="form-control" step="1000" min="0" required>
+          </div>
+          <div class="form-group">
+            <label>Danh mục</label>
+            <select name="categoryId" class="form-control" required>
+              <option value="">-- Chọn danh mục --</option>
+              @foreach(var cat in (IEnumerable<TechStore.Models.Category>)ViewBag.Categories){
+                <option value="@cat.Id">@cat.Name</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Mô tả</label>
+            <textarea name="description" class="form-control" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label>URL ảnh</label>
+            <input type="url" name="imageUrl" class="form-control">
+          </div>
+          <button type="submit" class="btn-primary w-100">Thêm Sản phẩm</button>
+        </form>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);background:var(--card2);">
+          <h5 style="font-family:var(--font-head);font-weight:700;margin:0;"><i class="fa-solid fa-list me-2"></i>Danh sách sản phẩm</h5>
+        </div>
+        @if(Model.Any()){
+          <table class="table-dark-custom">
+            <thead>
+              <tr>
+                <th>Tên sản phẩm</th>
+                <th>Danh mục</th>
+                <th>Giá</th>
+                <th style="text-align:right;">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach(var p in Model){
+                <tr>
+                  <td style="color:var(--accent);font-weight:600;">@p.Name</td>
+                  <td>@p.Category?.Name</td>
+                  <td style="color:var(--success);font-weight:600;">@p.Price.ToString("N0")₫</td>
+                  <td style="text-align:right;">
+                    <a href="/Product/Update/@p.Id" class="btn-sm btn-edit">Sửa</a>
+                    <a href="/Product/Delete/@p.Id" class="btn-sm btn-delete" onclick="return confirm('Bạn chắc chắn?');">Xóa</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        } else {
+          <div style="padding:40px;text-align:center;color:var(--muted);">
+            <i class="fa-solid fa-inbox" style="font-size:3rem;margin-bottom:15px;display:block;opacity:0.5;"></i>
+            <p>Chưa có sản phẩm nào</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

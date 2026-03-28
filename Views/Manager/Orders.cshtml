@@ -1,0 +1,119 @@
+@model IEnumerable<TechStore.Models.Order>
+@{ ViewData["Title"] = "Quản lý Đơn hàng"; }
+<style>
+.tab-nav{display:flex;gap:4px;margin-bottom:20px;border-bottom:2px solid var(--border);flex-wrap:wrap;}
+.tab-btn{background:none;border:none;color:var(--muted);padding:12px 16px;cursor:pointer;font-weight:600;font-size:.9rem;transition:all .2s;border-bottom:2px solid transparent;margin-bottom:-2px;}
+.tab-btn.active{color:var(--accent);border-color:var(--accent);}
+.tab-btn:hover{color:var(--text);}
+.table-dark-custom{width:100%;border-collapse:collapse;font-size:.86rem;color:var(--text);background:var(--card);border-radius:var(--r);overflow:hidden;border:1px solid var(--border);}
+.table-dark-custom thead{background:var(--card2);}
+.table-dark-custom th{padding:14px;text-align:left;font-weight:700;color:var(--accent);text-transform:uppercase;font-size:.75rem;letter-spacing:.5px;}
+.table-dark-custom td{padding:14px;border-bottom:1px solid var(--border);}
+.table-dark-custom tbody tr:hover{background:rgba(0,255,255,.03);}
+.status-badge{padding:4px 12px;border-radius:99px;font-weight:700;font-size:.75rem;display:inline-block;}
+.status-pending{background:rgba(251,191,36,.1);color:var(--warning);}
+.status-confirmed{background:rgba(0,255,255,.1);color:var(--accent);}
+.status-shipping{background:rgba(52,211,153,.1);color:var(--success);}
+.status-completed{background:rgba(52,211,153,.12);color:var(--success);}
+.status-cancelled{background:rgba(255,77,109,.1);color:#ff7a8a;}
+.btn-sm{padding:6px 12px;font-size:.85rem;text-decoration:none;margin:2px;display:inline-block;border-radius:var(--r-sm);background:rgba(0,255,255,.1);color:var(--accent);border:1px solid var(--border);}
+.btn-sm:hover{background:rgba(0,255,255,.2);}
+</style>
+<div class="page-header animate-in" style="z-index:2;">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h1><i class="fa-solid fa-bag-shopping me-2" style="color:var(--success);"></i>Quản lý Đơn hàng</h1>
+        <p style="color:var(--muted);font-size:.88rem;margin-top:4px;">@Model.Count() đơn hàng</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container py-4" style="position:relative;z-index:2;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;">
+    <!-- Filter Tabs -->
+    <div class="tab-nav">
+      <a href="/Manager/Orders" class="tab-btn @(string.IsNullOrEmpty(ViewBag.CurrentStatus) ? "active" : "")">
+        <i class="fa-solid fa-list me-1"></i>Tất cả (@Model.Count())
+      </a>
+      @foreach(var status in (string[])ViewBag.Statuses){
+        var count = ((IEnumerable<TechStore.Models.Order>)Model).Count(o => o.Status == status);
+        <a href="/Manager/Orders?status=@Uri.EscapeDataString(status)" class="tab-btn @(ViewBag.CurrentStatus == status ? "active" : "")">
+          @status (@count)
+        </a>
+      }
+    </div>
+
+    <!-- Orders Table -->
+    @if(Model.Any()){
+      <table class="table-dark-custom">
+        <thead>
+          <tr>
+            <th>Mã Đơn</th>
+            <th>Khách hàng</th>
+            <th>Tổng tiền</th>
+            <th>Trạng thái</th>
+            <th>Ngày đặt</th>
+            <th style="text-align:right;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach(var order in Model){
+            <tr>
+              <td style="color:var(--accent);font-weight:700;">#TS@order.Id.ToString("D4")</td>
+              <td>@order.CustomerName</td>
+              <td style="color:var(--accent);font-weight:700;">@order.Total.ToString("N0")₫</td>
+              <td>
+                <span class="status-badge status-@order.Status.ToLower().Replace(" ", "-")">@order.Status</span>
+              </td>
+              <td style="color:var(--muted);font-size:.85rem;">@order.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+              <td style="text-align:right;">
+                <a href="/Order/Detail/@order.Id" class="btn-sm">Xem chi tiết</a>
+                @if(order.Status != "Hoàn thành" && order.Status != "Đã hủy"){
+                  <button type="button" class="btn-sm" onclick="showUpdateForm(@order.Id); return false;">Cập nhật</button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } else {
+      <div style="padding:40px;text-align:center;color:var(--muted);">
+        <i class="fa-solid fa-inbox" style="font-size:3rem;margin-bottom:15px;display:block;opacity:0.5;"></i>
+        <p>Không có đơn hàng nào @(string.IsNullOrEmpty(ViewBag.CurrentStatus) ? "" : $"với trạng thái '{ViewBag.CurrentStatus}'")</p>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Update Status Modal (Simple) -->
+<div id="updateModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.8);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:30px;max-width:400px;width:90%;">
+    <h5 style="color:var(--text);margin-bottom:20px;"><i class="fa-solid fa-edit me-2"></i>Cập nhật Trạng thái Đơn hàng</h5>
+    <form id="updateForm" method="post" action="/Manager/UpdateOrderStatus">
+      <input type="hidden" name="id" id="orderId">
+      <div style="margin-bottom:20px;">
+        <label style="color:var(--text);font-weight:600;margin-bottom:8px;display:block;">Trạng thái mới</label>
+        <select name="status" style="width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:var(--r-sm);" required>
+          @foreach(var status in (string[])ViewBag.Statuses){
+            <option value="@status">@status</option>
+          }
+        </select>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="submit" style="flex:1;background:linear-gradient(135deg,var(--accent),#00b8d4);color:#05080f;padding:10px;border:none;border-radius:var(--r-sm);font-weight:700;cursor:pointer;">Cập nhật</button>
+        <button type="button" onclick="hideUpdateForm()" style="flex:1;background:var(--card2);color:var(--text);padding:10px;border:1px solid var(--border);border-radius:var(--r-sm);font-weight:700;cursor:pointer;">Hủy</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function showUpdateForm(orderId){
+  document.getElementById('orderId').value = orderId;
+  document.getElementById('updateModal').style.display = 'flex';
+}
+function hideUpdateForm(){
+  document.getElementById('updateModal').style.display = 'none';
+}
+</script>
