@@ -1,0 +1,16 @@
+@model TechStore.Models.PCBuild
+
+<div class="alert alert-info animate-in">
+    <h6><i class="fa-solid fa-magic"></i> AI Gợi ý: @ViewBag.Suggested?.TotalPrice.ToString("N0")₫</h6>
+    <p>Gợi ý build gaming/office cân bằng ngân sách. Click "Apply" để auto-add.</p>
+    <button class="btn btn-info" onclick="applyAutoBuild()">Apply Build</button>
+</div>
+
+<script>
+    function applyAutoBuild() {
+        // Simulate auto-add cheapest parts
+        showNotification('Auto-build applied!', 'success');
+        loadParts('CPU');
+    }
+</script>
+

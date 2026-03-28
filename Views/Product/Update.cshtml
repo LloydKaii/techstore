@@ -1,0 +1,216 @@
+@model TechStore.Models.Product
+@{
+    ViewData["Title"] = "Cập nhật sản phẩm";
+}
+
+<style>
+  .form-section {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0;
+  }
+  .form-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden;
+  }
+  .form-card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .form-card-header h5 {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0;
+  }
+  .form-card-body { padding: 24px; }
+  .input-suffix {
+    position: absolute;
+    right: 13px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: .82rem;
+    font-weight: 600;
+    pointer-events: none;
+  }
+  .img-preview-box {
+    background: var(--bg2);
+    border: 2px dashed var(--border);
+    border-radius: var(--r);
+    padding: 16px;
+    text-align: center;
+    min-height: 110px;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 8px;
+    transition: border-color .2s;
+    margin-bottom: 12px;
+  }
+  .img-preview-box.has-image { border-style: solid; border-color: var(--border-accent); padding: 8px; }
+
+  /* ID badge */
+  .id-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 4px 12px;
+    border-radius: 99px;
+    font-size: .78rem;
+    font-weight: 600;
+    margin-left: 10px;
+  }
+</style>
+
+<!-- PAGE HEADER -->
+<div class="form-section animate-in">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3">
+      <a href="/Product" style="color:var(--muted);text-decoration:none;font-size:.88rem;display:flex;align-items:center;gap:5px;">
+        <i class="fa-solid fa-arrow-left"></i> Sản phẩm
+      </a>
+      <span style="color:var(--border);"> / </span>
+      <span style="font-size:.88rem;color:var(--text);">Cập nhật</span>
+    </div>
+    <div style="display:flex;align-items:center;margin-top:12px;flex-wrap:wrap;gap:8px;">
+      <h1 style="font-family:var(--font-head);font-size:1.65rem;font-weight:800;letter-spacing:-.4px;">
+        <i class="fa-solid fa-pen me-2 text-accent"></i>Cập nhật sản phẩm
+      </h1>
+      <span class="id-badge"><i class="fa-solid fa-hashtag"></i>@Model.Id</span>
+    </div>
+  </div>
+</div>
+
+<div class="container py-5">
+  <form asp-action="Update" asp-route-id="@Model.Id" method="post">
+    <input type="hidden" asp-for="Id"/>
+    <div asp-validation-summary="ModelOnly" class="alert-custom mb-4" style="background:rgba(255,77,109,.1);border-color:rgba(255,77,109,.25);color:#ff6b85;"></div>
+
+    <div class="row g-4">
+      <!-- TRÁI -->
+      <div class="col-lg-7 animate-in">
+        <div class="form-card">
+          <div class="form-card-header">
+            <i class="fa-solid fa-circle-info text-accent"></i>
+            <h5>Thông tin sản phẩm</h5>
+          </div>
+          <div class="form-card-body">
+            <div class="row g-3">
+
+              <div class="col-12">
+                <label asp-for="Name" class="form-label-custom">Tên sản phẩm</label>
+                <input asp-for="Name" class="form-control form-control-dark"/>
+                <span asp-validation-for="Name" class="text-danger mt-1 d-block"></span>
+              </div>
+
+              <div class="col-sm-6">
+                <label asp-for="Price" class="form-label-custom">Giá bán</label>
+                <div style="position:relative;">
+                  <input asp-for="Price" class="form-control form-control-dark" style="padding-right:36px;"/>
+                  <span class="input-suffix">₫</span>
+                </div>
+                <span asp-validation-for="Price" class="text-danger mt-1 d-block"></span>
+              </div>
+
+              <div class="col-sm-6">
+                <label asp-for="CategoryId" class="form-label-custom">Danh mục</label>
+                <select asp-for="CategoryId" asp-items="ViewBag.Categories"
+                        class="form-control form-control-dark"></select>
+                <span asp-validation-for="CategoryId" class="text-danger mt-1 d-block"></span>
+              </div>
+
+              <div class="col-12">
+                <label asp-for="Description" class="form-label-custom">Mô tả</label>
+                <textarea asp-for="Description" class="form-control form-control-dark" rows="4"></textarea>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PHẢI -->
+      <div class="col-lg-5 animate-in-delay">
+
+        <!-- Ảnh -->
+        <div class="form-card mb-4">
+          <div class="form-card-header">
+            <i class="fa-solid fa-image text-accent"></i>
+            <h5>Hình ảnh</h5>
+          </div>
+          <div class="form-card-body">
+            <div id="imgPreviewBox" class="img-preview-box @(!string.IsNullOrEmpty(Model.ImageUrl) ? "has-image" : "")">
+              @if (!string.IsNullOrEmpty(Model.ImageUrl))
+              {
+                <img id="previewImg" src="@Model.ImageUrl" alt="@Model.Name"
+                     style="max-width:100%;max-height:220px;border-radius:8px;object-fit:contain;"/>
+              }
+              else
+              {
+                <i class="fa-solid fa-image" style="font-size:2rem;color:rgba(255,255,255,.1);"></i>
+                <span style="font-size:.82rem;color:var(--muted);">Chưa có ảnh</span>
+              }
+            </div>
+
+            <label asp-for="ImageUrl" class="form-label-custom">URL hình ảnh mới</label>
+            <input asp-for="ImageUrl" id="imgUrlInput" class="form-control form-control-dark"
+                   placeholder="Dán URL mới để thay ảnh..."/>
+            <p style="font-size:.76rem;color:var(--muted);margin-top:6px;">
+              Để trống nếu không muốn thay ảnh hiện tại.
+            </p>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-card">
+          <div class="form-card-body">
+            <div class="d-flex flex-column gap-2">
+              <button type="submit" class="btn-primary-custom justify-content-center" style="padding:13px;">
+                <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+              </button>
+              <a href="/Product/Display/@Model.Id" class="btn-view-custom justify-content-center" style="padding:12px;text-align:center;">
+                <i class="fa-solid fa-eye"></i> Xem chi tiết
+              </a>
+              <a href="/Product" class="btn-secondary-custom justify-content-center" style="padding:12px;text-align:center;">
+                <i class="fa-solid fa-xmark"></i> Hủy
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </form>
+</div>
+
+@section Scripts {
+<script>
+  const urlInput   = document.getElementById('imgUrlInput');
+  const previewBox = document.getElementById('imgPreviewBox');
+
+  urlInput.addEventListener('input', function() {
+    const url = this.value.trim();
+    if (!url) return;
+
+    const img = new Image();
+    img.onload = () => {
+      previewBox.innerHTML = '';
+      previewBox.appendChild(img);
+      previewBox.classList.add('has-image');
+      img.style.cssText = 'max-width:100%;max-height:220px;border-radius:8px;object-fit:contain;';
+    };
+    img.onerror = () => {
+      previewBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="font-size:1.5rem;color:var(--danger);"></i><span style="font-size:.82rem;color:var(--muted);">URL không hợp lệ</span>';
+      previewBox.classList.remove('has-image');
+    };
+    img.src = url;
+  });
+</script>
+}

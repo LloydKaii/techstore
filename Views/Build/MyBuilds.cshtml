@@ -1,0 +1,73 @@
+@model List<TechStore.Models.PCBuild>
+@{
+    ViewData["Title"] = "Builds của tôi";
+}
+
+<div class="page-header">
+    <div class="container">
+        <h1><i class="fa-solid fa-list me-2 text-accent"></i>Builds PC của tôi</h1>
+        <a href="/Build" class="btn btn-primary">Tạo build mới</a>
+    </div>
+</div>
+
+<div class="container py-5">
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="fa-solid fa-screwdriver-wrench" style="font-size:4rem;color:var(--muted);"></i>
+            <h4>Chưa có build nào</h4>
+            <p class="text-muted">Tạo build đầu tiên của bạn!</p>
+            <a href="/Build" class="btn btn-primary">Bắt đầu build</a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var build in Model)
+            {
+                <div class="col-lg-6">
+                    <div class="card-dark h-100">
+                        <div class="card-header d-flex justify-content-between">
+                            <h5>@build.Name</h5>
+                            <span class="badge bg-success">@build.TotalPrice.ToString("N0")₫</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2 mb-3">
+                                @if (build.CPU != null)
+                                {
+                                    <div class="col-6"><small>CPU: @build.CPU.Name</small></div>
+                                }
+                                @if (build.Mainboard != null)
+                                {
+                                    <div class="col-6"><small>Main: @build.Mainboard.Name</small>
+                                    </div>
+                                }
+                                @if (build.RAM != null)
+                                {
+                                    <div class="col-6"><small>RAM: @build.RAM.Name</small></div>
+                                }
+                                @if (build.VGA != null)
+                                {
+                                    <div class="col-6"><small>VGA: @build.VGA.Name</small></div>
+                                }
+                                @if (build.PSU != null)
+                                {
+                                    <div class="col-6"><small>PSU: @build.PSU.Name</small></div>
+                                }
+                                @if (build.Case != null)
+                                {
+                                    <div class="col-6"><small>Case: @build.Case.Name</small></div>
+                                }
+                            </div>
+                            <small class="text-muted">@build.Notes</small>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">Tạo: @build.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+

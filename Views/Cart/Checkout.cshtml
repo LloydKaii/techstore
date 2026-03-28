@@ -1,0 +1,300 @@
+@{ ViewData["Title"] = "Đặt hàng"; }
+
+<div class="page-header animate-in" style="z-index:2;">
+  <div class="container"><h1><i class="fa-solid fa-credit-card me-2 text-accent"></i>Thanh toán</h1></div>
+</div>
+
+@if(TempData["Error"] != null){
+  <div class="container" style="padding-top:16px;position:relative;z-index:2;">
+    <div class="alert" style="background:rgba(255,80,80,.1);border:1px solid rgba(255,80,80,.25);color:#ff7a8a;border-radius:var(--r-sm);padding:12px 16px;">
+      <i class="fa-solid fa-triangle-exclamation me-2"></i>@TempData["Error"]
+    </div>
+  </div>
+}
+
+<div class="container py-5" style="position:relative;z-index:2;">
+  <div class="row g-4">
+
+    <!-- CỘT TRÁI: Form thông tin -->
+    <div class="col-lg-7 animate-in">
+      <form asp-controller="Cart" asp-action="PlaceOrder" method="post" id="orderForm">
+
+        <!-- Thông tin giao hàng -->
+        <div class="card-dark p-0 mb-4" style="overflow:hidden;">
+          <div style="padding:16px 22px;border-bottom:1px solid var(--border);background:var(--card2);">
+            <h6 style="font-family:var(--font-head);font-weight:700;margin:0;">
+              <i class="fa-solid fa-location-dot text-accent me-2"></i>Thông tin giao hàng
+            </h6>
+          </div>
+          <div style="padding:24px;">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label-custom">Họ và tên người nhận <span style="color:#ff7a8a;">*</span></label>
+                <input name="customerName" class="form-control form-control-dark" required
+                       value="@User.Identity?.Name?.Split('@')[0]" placeholder="Nguyễn Văn A"/>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label-custom">Số điện thoại <span style="color:#ff7a8a;">*</span></label>
+                <input name="phone" class="form-control form-control-dark"
+                       placeholder="0912 345 678" required pattern="[0-9]{9,11}"/>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label-custom">Tỉnh / Thành phố</label>
+                <select name="city" class="form-control form-control-dark">
+                  <option>TP. Hồ Chí Minh</option>
+                  <option>Hà Nội</option>
+                  <option>Đà Nẵng</option>
+                  <option>Cần Thơ</option>
+                  <option>Hải Phòng</option>
+                  <option>Biên Hòa</option>
+                  <option>Nha Trang</option>
+                  <option>Huế</option>
+                  <option>Khác</option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label-custom">Địa chỉ chi tiết <span style="color:#ff7a8a;">*</span></label>
+                <input name="address" class="form-control form-control-dark"
+                       placeholder="Số nhà, tên đường, phường/xã..." required/>
+              </div>
+              <div class="col-12">
+                <label class="form-label-custom">Ghi chú đơn hàng</label>
+                <textarea name="note" class="form-control form-control-dark" rows="2"
+                          placeholder="Ghi chú thêm (giao giờ hành chính, để ở bảo vệ...)"></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Phương thức thanh toán -->
+        <div class="card-dark p-0 mb-4" style="overflow:hidden;">
+          <div style="padding:16px 22px;border-bottom:1px solid var(--border);background:var(--card2);">
+            <h6 style="font-family:var(--font-head);font-weight:700;margin:0;">
+              <i class="fa-solid fa-wallet text-accent me-2"></i>Phương thức thanh toán
+            </h6>
+          </div>
+          <div style="padding:18px 24px;display:flex;flex-direction:column;gap:10px;">
+
+            <!-- COD -->
+            <label style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px solid var(--accent);border-radius:var(--r-sm);cursor:pointer;background:rgba(0,255,255,.04);">
+              <input type="radio" name="paymentMethod" value="COD" checked style="accent-color:var(--accent);width:18px;height:18px;"/>
+              <div style="display:flex;align-items:center;gap:12px;flex:1;">
+                <div style="width:38px;height:38px;background:rgba(251,191,36,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                  <i class="fa-solid fa-money-bill-wave" style="color:var(--warning);font-size:1.1rem;"></i>
+                </div>
+                <div>
+                  <div style="font-weight:700;font-size:.9rem;">Thanh toán khi nhận hàng (COD)</div>
+                  <div style="color:var(--muted);font-size:.78rem;">Kiểm tra hàng trước, thanh toán tiền mặt khi nhận</div>
+                </div>
+              </div>
+              <span style="background:rgba(52,211,153,.1);color:var(--success);padding:3px 8px;border-radius:99px;font-size:.7rem;font-weight:700;white-space:nowrap;">Miễn phí</span>
+            </label>
+
+            <!-- Bank Transfer -->
+            <label style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;opacity:.6;" onclick="selectPayment(this)">
+              <input type="radio" name="paymentMethod" value="BankTransfer" style="accent-color:var(--accent);width:18px;height:18px;"/>
+              <div style="display:flex;align-items:center;gap:12px;flex:1;">
+                <div style="width:38px;height:38px;background:rgba(0,255,255,.08);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                  <i class="fa-solid fa-building-columns" style="color:var(--accent);font-size:1.1rem;"></i>
+                </div>
+                <div>
+                  <div style="font-weight:700;font-size:.9rem;">Chuyển khoản ngân hàng</div>
+                  <div style="color:var(--muted);font-size:.78rem;">MB Bank · Vietcombank · Techcombank</div>
+                </div>
+              </div>
+              <span style="background:rgba(123,94,167,.1);color:#c4aff0;padding:3px 8px;border-radius:99px;font-size:.7rem;font-weight:700;white-space:nowrap;">Sắp có</span>
+            </label>
+
+            <!-- MoMo -->
+            <label style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:1px solid var(--border);border-radius:var(--r-sm);cursor:pointer;opacity:.6;" onclick="selectPayment(this)">
+              <input type="radio" name="paymentMethod" value="MoMo" style="accent-color:var(--accent);width:18px;height:18px;"/>
+              <div style="display:flex;align-items:center;gap:12px;flex:1;">
+                <div style="width:38px;height:38px;background:rgba(255,77,109,.1);border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                  <i class="fa-solid fa-mobile-screen" style="color:#ff7a8a;font-size:1.1rem;"></i>
+                </div>
+                <div>
+                  <div style="font-weight:700;font-size:.9rem;">Ví MoMo / ZaloPay</div>
+                  <div style="color:var(--muted);font-size:.78rem;">Thanh toán qua ví điện tử</div>
+                </div>
+              </div>
+              <span style="background:rgba(123,94,167,.1);color:#c4aff0;padding:3px 8px;border-radius:99px;font-size:.7rem;font-weight:700;white-space:nowrap;">Sắp có</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Mã giảm giá -->
+        <div class="card-dark p-0 mb-4" style="overflow:hidden;">
+          <div style="padding:16px 22px;border-bottom:1px solid var(--border);background:var(--card2);">
+            <h6 style="font-family:var(--font-head);font-weight:700;margin:0;">
+              <i class="fa-solid fa-ticket text-accent me-2"></i>Mã giảm giá
+            </h6>
+          </div>
+          <div style="padding:18px 24px;">
+            <div style="display:flex;gap:8px;">
+              <input name="voucherCode" id="voucherInput" class="form-control form-control-dark"
+                     placeholder="Nhập mã voucher (VD: TECHSTORE10)"
+                     value="@ViewBag.VoucherCode" style="text-transform:uppercase;"/>
+              <button type="button" onclick="checkVoucher()" class="btn-secondary-custom" style="padding:11px 20px;white-space:nowrap;">
+                <i class="fa-solid fa-tag me-1"></i>Áp dụng
+              </button>
+            </div>
+            <div id="voucherMsg" style="font-size:.82rem;margin-top:8px;"></div>
+            <input type="hidden" id="appliedPercent" name="_discountPercent" value="0"/>
+            <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+              @{ var hintCodes = new[]{"TECHSTORE10","SALE20","NEWUSER15","GAMING30"}; }
+              @{ var hintPcts  = new[]{"10%","20%","15%","30%"}; }
+              @for(int hi=0; hi<hintCodes.Length; hi++){
+                <button type="button" onclick="applyHint('@hintCodes[hi]')"
+                  style="background:rgba(0,255,255,.06);border:1px solid rgba(0,255,255,.15);color:var(--accent);padding:4px 10px;border-radius:99px;font-size:.72rem;cursor:pointer;font-family:var(--font-body);">
+                  @hintCodes[hi] (-@hintPcts[hi])
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Nút đặt hàng -->
+        <button type="submit" class="btn-primary-custom w-100 justify-content-center" style="padding:16px;font-size:1rem;border-radius:var(--r-sm);" id="submitBtn">
+          <i class="fa-solid fa-lock me-2"></i>Xác nhận đặt hàng · <span id="totalDisplay">@ViewBag.CartTotal?.ToString("N0")₫</span>
+        </button>
+        <p style="text-align:center;color:var(--muted);font-size:.75rem;margin-top:10px;">
+          <i class="fa-solid fa-shield-halved me-1"></i>Giao dịch được bảo mật. Đơn hàng sẽ được xác nhận trong 2-4 giờ.
+        </p>
+
+      </form>
+    </div>
+
+    <!-- CỘT PHẢI: Tóm tắt đơn -->
+    <div class="col-lg-5 animate-in-delay">
+      <div class="card-dark p-0" style="overflow:hidden;position:sticky;top:80px;">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);background:var(--card2);">
+          <h6 style="font-family:var(--font-head);font-weight:700;margin:0;">
+            Đơn hàng · @(((List<TechStore.Models.CartItem>)ViewBag.CartItems).Count) sản phẩm
+          </h6>
+        </div>
+
+        <!-- Danh sách sản phẩm -->
+        <div style="padding:10px;max-height:280px;overflow-y:auto;">
+          @foreach(var item in (List<TechStore.Models.CartItem>)ViewBag.CartItems){
+            <div style="display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--r-sm);margin-bottom:2px;">
+              @if(!string.IsNullOrEmpty(item.ImageUrl)){
+                <img src="@item.ImageUrl" style="width:48px;height:48px;object-fit:cover;border-radius:7px;flex-shrink:0;border:1px solid var(--border);" alt=""/>
+              } else {
+                <div style="width:48px;height:48px;background:var(--card2);border-radius:7px;flex-shrink:0;display:flex;align-items:center;justify-content:center;">
+                  <i class="fa-solid fa-image" style="color:rgba(255,255,255,.1);"></i>
+                </div>
+              }
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">@item.Name</div>
+                <div style="color:var(--muted);font-size:.78rem;">x@item.Quantity · @item.Price.ToString("N0")₫/sp</div>
+              </div>
+              <div style="font-weight:700;font-size:.88rem;color:var(--accent);flex-shrink:0;">@item.Total.ToString("N0")₫</div>
+            </div>
+          }
+        </div>
+
+        <!-- Tổng kết -->
+        <div style="padding:16px 20px;border-top:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:.9rem;">
+            <span style="color:var(--muted);">Tạm tính</span>
+            <span id="subtotalDisplay">@ViewBag.CartTotal?.ToString("N0")₫</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:.9rem;">
+            <span style="color:var(--muted);">Vận chuyển</span>
+            <span style="color:var(--success);font-weight:600;">Miễn phí</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:7px 0;font-size:.9rem;" id="discountRow" style="display:none!important;">
+            <span style="color:var(--muted);">Giảm giá</span>
+            <span id="discountDisplay" style="color:var(--success);font-weight:600;">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:14px 0 4px;border-top:1px solid var(--border);margin-top:8px;">
+            <strong style="font-size:1.02rem;">Tổng cộng</strong>
+            <strong id="finalTotal" style="color:var(--accent);font-family:var(--font-head);font-size:1.15rem;">@ViewBag.CartTotal?.ToString("N0")₫</strong>
+          </div>
+        </div>
+
+        <!-- Giao hàng info -->
+        <div style="padding:12px 20px;border-top:1px solid var(--border);background:var(--card2);display:flex;align-items:center;gap:10px;">
+          <i class="fa-solid fa-truck-fast text-accent"></i>
+          <span style="font-size:.82rem;color:var(--muted);">Giao hàng tiêu chuẩn <strong style="color:var(--text);">2-3 ngày</strong> làm việc</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+@section Scripts {
+<script>
+const originalTotal = @(ViewBag.CartTotal ?? 0);
+let appliedVoucherCode = '';
+
+function applyHint(code){
+  document.getElementById('voucherInput').value = code;
+  checkVoucher();
+}
+
+async function checkVoucher(){
+  const code = document.getElementById('voucherInput').value.trim().toUpperCase();
+  if(!code){ showMsg('Vui lòng nhập mã voucher', false); return; }
+  showMsg('<i class="fa-solid fa-spinner fa-spin me-1"></i>Đang kiểm tra...', null);
+  try{
+    const r = await fetch(`/AI/CheckVoucher?code=${encodeURIComponent(code)}`);
+    const d = await r.json();
+    if(d.valid){
+      const discount = Math.round(originalTotal * d.percent / 100);
+      const final    = originalTotal - discount;
+      document.getElementById('discountDisplay').textContent = '-' + discount.toLocaleString('vi-VN') + '₫ (-' + d.percent + '%)';
+      document.getElementById('discountRow').style.display   = 'flex';
+      document.getElementById('finalTotal').textContent      = final.toLocaleString('vi-VN') + '₫';
+      document.getElementById('totalDisplay').textContent    = final.toLocaleString('vi-VN') + '₫';
+      document.getElementById('appliedPercent').value        = d.percent;
+      appliedVoucherCode = code;
+      showMsg('<i class="fa-solid fa-circle-check me-1"></i>' + d.message, true);
+    } else {
+      resetDiscount();
+      appliedVoucherCode = '';
+      showMsg('<i class="fa-solid fa-triangle-exclamation me-1"></i>' + d.message, false);
+    }
+  } catch(e){ showMsg('Lỗi kết nối khi kiểm tra voucher', false); }
+}
+
+function resetDiscount(){
+  document.getElementById('discountRow').style.display  = 'none';
+  document.getElementById('finalTotal').textContent     = originalTotal.toLocaleString('vi-VN') + '₫';
+  document.getElementById('totalDisplay').textContent   = originalTotal.toLocaleString('vi-VN') + '₫';
+  document.getElementById('appliedPercent').value       = 0;
+}
+
+function showMsg(html, success){
+  const el = document.getElementById('voucherMsg');
+  el.innerHTML = `<span style="color:${success===true?'var(--success)':success===false?'#ff7a8a':'var(--muted)'};">${html}</span>`;
+}
+
+// Chặn submit nếu nhập mã nhưng chưa apply
+document.getElementById('orderForm').addEventListener('submit', function(e){
+  const code = document.getElementById('voucherInput').value.trim().toUpperCase();
+  if(code && code !== appliedVoucherCode){
+    e.preventDefault();
+    showMsg('<i class="fa-solid fa-triangle-exclamation me-1"></i>Bạn chưa áp dụng mã voucher! Nhấn "Áp dụng" trước khi đặt hàng.', false);
+    document.getElementById('voucherInput').scrollIntoView({behavior:'smooth', block:'center'});
+  }
+});
+
+// Style cho radio payment
+function selectPayment(label){
+  document.querySelectorAll('[name=paymentMethod]').forEach(r => {
+    const lbl = r.closest('label');
+    if(lbl){ lbl.style.border='1px solid var(--border)'; lbl.style.opacity='.6'; }
+  });
+  label.style.border = '2px solid var(--accent)';
+  label.style.opacity = '1';
+  label.querySelector('input').checked = true;
+}
+// Highlight COD on load
+document.addEventListener('DOMContentLoaded', function(){
+  const codLabel = document.querySelector('[name=paymentMethod][value=COD]')?.closest('label');
+  if(codLabel){ codLabel.style.border='2px solid var(--accent)'; codLabel.style.opacity='1'; }
+});
+</script>
+}

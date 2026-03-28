@@ -1,0 +1,74 @@
+@model TechStore.Models.ApplicationUser
+@{
+  ViewData["Title"] = "Hồ sơ cá nhân";
+}
+<div class="page-header animate-in" style="z-index:2;">
+  <div class="container">
+    <h1><i class="fa-solid fa-user me-2 text-accent"></i>Hồ sơ cá nhân</h1>
+  </div>
+</div>
+<div class="container py-5" style="position:relative;z-index:2;">
+  <div class="row g-4 justify-content-center">
+    <div class="col-lg-4 animate-in">
+      <div class="card-dark p-4 text-center">
+        <div
+          style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:2rem;color:#05080f;margin:0 auto 16px;box-shadow:0 0 30px rgba(0,255,255,.3);">
+          @Model?.FullName?.Substring(0,1)?.ToUpper()
+        </div>
+        <h4 style="font-family:var(--font-head);font-weight:700;">@Model?.FullName</h4>
+        <p style="color:var(--muted);font-size:.88rem;">@Model?.Email</p>
+        @{
+          string profileView = ViewBag.ProfileView as string ?? "Customer";
+        }
+        @await Html.PartialAsync($"Profile-{profileView}", Model)
+        <div style="margin-top:20px;display:flex;flex-direction:column;gap:8px;">
+          <a href="/Order/MyOrders" class="btn-secondary-custom justify-content-center"><i
+            class="fa-solid fa-bag-shopping"></i>Đơn hàng của tôi</a>
+            <a href="/Wishlist" class="btn-secondary-custom justify-content-center"><i class="fa-solid fa-heart"
+                                                                                         style="color:#ff6b9d;"></i>Wishlist yêu thích</a>
+              <form asp-controller="Account" asp-action="Logout" method="post">
+                <button type="submit" class="btn-danger-custom w-100 justify-content-center"
+                        style="padding:11px;font-size:.9rem;"><i class="fa-solid fa-right-from-bracket"></i>Đăng xuất</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5 animate-in-delay">
+          <div class="card-dark p-4">
+            <h6 style="font-family:var(--font-head);font-weight:700;margin-bottom:18px;"><i
+              class="fa-solid fa-circle-info text-accent me-2"></i>Thông tin tài khoản</h6>
+              <div style="display:flex;flex-direction:column;gap:0;">
+                <div style="display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border);">
+                  <span style="color:var(--muted);font-size:.88rem;">Họ tên</span>
+                  <span style="font-weight:600;font-size:.9rem;">@Model?.FullName</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border);">
+                  <span style="color:var(--muted);font-size:.88rem;">Email</span>
+                  <span style="font-weight:600;font-size:.9rem;">@Model?.Email</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border);">
+                  <span style="color:var(--muted);font-size:.88rem;">Username</span>
+                  <span style="font-weight:600;font-size:.9rem;">@Model?.UserName</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border);">
+                  <span style="color:var(--muted);font-size:.88rem;">Ngày tham gia</span>
+                  <span style="font-weight:600;font-size:.9rem;">@Model?.CreatedAt.ToString("dd/MM/yyyy")</span>
+                </div>
+                <div style="display:flex;justify-content:space-between;padding:13px 0;">
+                  <span style="color:var(--muted);font-size:.88rem;">Vai trò</span>
+                  <span style="font-weight:700;color:var(--accent);font-size:.9rem;">
+                    @(User.IsInRole("Admin")?"Quản trị viên":User.IsInRole("Manager")?"Quản lý":"Khách hàng")
+                  </span>
+                </div>
+              </div>
+              @if (User.IsInRole("Admin") || User.IsInRole("Manager"))
+              {
+                <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+                  <a href="/Admin/Dashboard" class="btn-primary-custom w-100 justify-content-center"><i
+                    class="fa-solid fa-gauge"></i>Vào Admin Dashboard</a>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>

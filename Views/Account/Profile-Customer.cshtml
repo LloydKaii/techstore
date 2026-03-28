@@ -1,0 +1,16 @@
+@model TechStore.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Hồ sơ khách hàng";
+}
+<div style="text-align:center;padding:40px;color:var(--muted);">
+    <h4 style="font-family:var(--font-head);color:var(--text);">Chào mừng, @Model.FullName!</h4>
+    <p>Bạn đang ở chế độ <span
+        style="background:rgba(52,211,153,.12);color:var(--success);padding:4px 12px;border-radius:20px;font-weight:700;">KHÁCH
+        HÀNG</span></p>
+        <div style="max-width:400px;margin:0 auto;">
+            <a href="/Order/MyOrders" class="btn-secondary-custom w-100 mb-2">📦 Đơn hàng của tôi</a>
+            <a href="/Wishlist" class="btn-secondary-custom w-100 mb-2">❤️ Wishlist yêu thích</a>
+            <a href="/Cart" class="btn-secondary-custom w-100">🛒 Giỏ hàng</a>
+        </div>
+    </div>
+

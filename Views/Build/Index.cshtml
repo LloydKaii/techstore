@@ -1,0 +1,64 @@
+@{
+  ViewData["Title"] = "PC Builder";
+}
+
+<div class="container mt-5">
+  <h1 class="mb-4">PC Builder <i class="fa-solid fa-screwdriver-wrench text-primary"></i></h1>
+    
+  <div class="row mb-5">
+    <div class="col-md-2">
+      <div class="component-slot border p-3 rounded text-center cursor-pointer mb-3" data-type="CPU">
+        <i class="fa-solid fa-microchip fa-2x mb-2"></i>
+        <div id="cpuSlot">CPU</div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="component-slot border p-3 rounded text-center cursor-pointer mb-3" data-type="RAM">
+        <i class="fa-solid fa-memory fa-2x mb-2"></i>
+        <div id="ramSlot">RAM</div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="component-slot border p-3 rounded text-center cursor-pointer mb-3" data-type="VGA">
+        <i class="fa-solid fa-gpu-board fa-2x mb-2"></i>
+        <div id="vgaSlot">VGA</div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="component-slot border p-3 rounded text-center cursor-pointer mb-3" data-type="Mainboard">
+        <i class="fa-solid fa-motherboard fa-2x mb-2"></i>
+        <div id="mainboardSlot">Mainboard</div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="component-slot border p-3 rounded text-center cursor-pointer mb-3" data-type="PSU">
+        <i class="fa-solid fa-bolt fa-2x mb-2"></i>
+        <div id="psuSlot">PSU</div>
+      </div>
+    </div>
+    <div class="col-md-2">
+      <div class="component-slot border p-3 rounded text-center cursor-pointer mb-3" data-type="SSD">
+        <i class="fa-solid fa-hard-drive fa-2x mb-2"></i>
+        <div id="ssdSlot">SSD</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-8">
+      <h4>Linh kiện (<span id="currentType">CPU</span>)</h4>
+      <div id="partsGrid" class="border p-4 bg-light rounded" style="min-height: 300px;">
+        Click nút trên để load linh kiện
+      </div>
+    </div>
+    <div class="col-md-4">
+      <h3>Build hiện tại</h3>
+      <div id="selected" class="border p-3 bg-white rounded mb-4"></div>
+      <h2 class="text-success" id="total">0 ₫</h2>
+      <button class="btn btn-primary btn-lg me-2" onclick="autoBuild()">AI Gợi ý</button>
+      <button class="btn btn-success btn-lg" onclick="saveBuild()">Lưu Build</button>
+    </div>
+  </div>
+</div>
+
+<script src="~/js/pcbuilder.js"></script>

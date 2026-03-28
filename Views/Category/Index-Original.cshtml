@@ -1,0 +1,67 @@
+@model IEnumerable<TechStore.Models.Category>
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+}
+
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div>
+                <h1><i class="fa-solid fa-tags me-2 text-accent"></i>Quản lý danh mục</h1>
+                <p style="color:#8899aa;margin:0;font-size:.9rem;">@Model.Count() danh mục</p>
+            </div>
+            <a href="/Category/Add" class="btn-primary-custom">
+                <i class="fa-solid fa-plus me-2"></i>Thêm danh mục
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="card-dark" style="overflow:hidden;">
+        <table class="table-dark-custom">
+            <thead>
+                <tr>
+                    <th style="width:60px;">#</th>
+                    <th>Tên danh mục</th>
+                    <th>Mô tả</th>
+                    <th style="width:80px;">Sản phẩm</th>
+                    <th style="width:160px;">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td style="font-weight:600;color:#f0f4ff;">@item.Name</td>
+                        <td>@(item.Description ?? "—")</td>
+                        <td>
+                            <span
+                                style="background:rgba(0,212,255,.1);color:var(--accent);padding:2px 10px;border-radius:50px;font-size:.78rem;font-weight:700;">
+                                @(item.Products?.Count ?? 0)
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="/Category/Display/@item.Id" class="btn-view-custom"><i
+                                    class="fa-solid fa-eye"></i></a>
+                                    <a href="/Category/Update/@item.Id" class="btn-edit-custom"><i
+                                        class="fa-solid fa-pen"></i></a>
+                                        <a href="/Category/Delete/@item.Id" class="btn-danger-custom"><i
+                                            class="fa-solid fa-trash"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            @if (!Model.Any())
+                            {
+                                <tr>
+                                    <td colspan="5" style="text-align:center;padding:40px;color:#8899aa;">Chưa có danh mục.</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+

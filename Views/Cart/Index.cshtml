@@ -1,0 +1,99 @@
+@model List<TechStore.Models.CartItem>
+@{ ViewData["Title"] = "Giỏ hàng"; }
+
+<style>
+.cart-img{width:64px;height:64px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--border);}
+.cart-no-img{width:64px;height:64px;background:var(--card2);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.12);font-size:1.2rem;}
+.qty-btn{width:30px;height:30px;background:var(--card2);border:1px solid var(--border);color:var(--text);border-radius:var(--r-sm);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .15s;}
+.qty-btn:hover{border-color:var(--accent);color:var(--accent);}
+.qty-input{width:44px;height:30px;background:var(--bg2);border:1px solid var(--border);color:var(--text);border-radius:var(--r-sm);text-align:center;font-family:var(--font-body);font-size:.9rem;font-weight:600;}
+.order-summary{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;position:sticky;top:80px;}
+</style>
+
+<div class="page-header animate-in">
+  <div class="container">
+    <h1><i class="fa-solid fa-bag-shopping me-2 text-accent"></i>Giỏ hàng
+      @if(Model.Any()){
+        <span style="font-size:.9rem;font-weight:500;color:var(--muted);margin-left:10px;">(@Model.Sum(i=>i.Quantity) sản phẩm)</span>
+      }
+    </h1>
+  </div>
+</div>
+
+<div class="container py-5">
+  @if(!Model.Any()){
+    <div style="text-align:center;padding:80px 20px;" class="animate-in">
+      <div style="width:80px;height:80px;background:var(--card2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2rem;color:rgba(255,255,255,.1);">
+        <i class="fa-solid fa-bag-shopping"></i>
+      </div>
+      <h4 style="font-family:var(--font-head);margin-bottom:8px;">Giỏ hàng trống</h4>
+      <p style="color:var(--muted);margin-bottom:24px;">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục</p>
+      <a href="/Product" class="btn-primary-custom"><i class="fa-solid fa-laptop"></i> Xem sản phẩm</a>
+    </div>
+  } else {
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;" class="animate-in">
+          @foreach(var item in Model){
+            <div style="display:flex;align-items:center;gap:16px;padding:18px 20px;border-bottom:1px solid var(--border);" class="cart-row">
+              @if(!string.IsNullOrEmpty(item.ImageUrl)){
+                <img src="@item.ImageUrl" class="cart-img" alt="@item.Name"/>
+              } else {
+                <div class="cart-no-img"><i class="fa-solid fa-image"></i></div>
+              }
+              <div style="flex:1;min-width:0;">
+                <div style="font-weight:600;font-size:.95rem;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">@item.Name</div>
+                <div style="color:var(--accent);font-family:var(--font-head);font-weight:700;">@item.Price.ToString("N0")₫</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <form asp-controller="Cart" asp-action="Update" method="post" style="display:flex;align-items:center;gap:6px;">
+                  <input type="hidden" name="productId" value="@item.ProductId"/>
+                  <button type="submit" name="qty" value="@(item.Quantity-1)" class="qty-btn"><i class="fa-solid fa-minus" style="font-size:.7rem;"></i></button>
+                  <span class="qty-input">@item.Quantity</span>
+                  <button type="submit" name="qty" value="@(item.Quantity+1)" class="qty-btn"><i class="fa-solid fa-plus" style="font-size:.7rem;"></i></button>
+                </form>
+                <div style="font-weight:700;font-size:.95rem;min-width:90px;text-align:right;color:var(--text);">@item.Total.ToString("N0")₫</div>
+                <form asp-controller="Cart" asp-action="Remove" method="post">
+                  <input type="hidden" name="productId" value="@item.ProductId"/>
+                  <button type="submit" class="btn-danger-custom" style="padding:7px 10px;" onclick="return confirm('Xóa sản phẩm này?')">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </form>
+              </div>
+            </div>
+          }
+        </div>
+        <div class="mt-3">
+          <a href="/Product" class="btn-secondary-custom"><i class="fa-solid fa-arrow-left"></i> Tiếp tục mua</a>
+        </div>
+      </div>
+
+      <div class="col-lg-4 animate-in-delay">
+        <div class="order-summary">
+          <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:20px;">Tóm tắt đơn hàng</h5>
+          <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+            <span style="color:var(--muted);">Tạm tính</span>
+            <span style="font-weight:600;">@ViewBag.CartTotal.ToString("N0")₫</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+            <span style="color:var(--muted);">Vận chuyển</span>
+            <span style="color:var(--success);font-weight:600;">Miễn phí</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:16px 0;">
+            <span style="font-weight:700;font-size:1rem;">Tổng cộng</span>
+            <span style="font-family:var(--font-head);font-weight:800;font-size:1.2rem;color:var(--accent);">@ViewBag.CartTotal.ToString("N0")₫</span>
+          </div>
+          @if(User.Identity?.IsAuthenticated == true){
+            <a href="/Cart/Checkout" class="btn-primary-custom w-100 justify-content-center" style="padding:14px;">
+              <i class="fa-solid fa-credit-card"></i> Đặt hàng ngay
+            </a>
+          } else {
+            <a href="/Account/Login?returnUrl=/Cart/Checkout" class="btn-primary-custom w-100 justify-content-center" style="padding:14px;">
+              <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập để đặt hàng
+            </a>
+          }
+        </div>
+      </div>
+    </div>
+  }
+</div>

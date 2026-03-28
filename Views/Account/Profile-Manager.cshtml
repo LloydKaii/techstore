@@ -1,0 +1,22 @@
+@model TechStore.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Hồ sơ quản lý";
+}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card-dark p-5 text-center">
+                <h3 style="font-family:var(--font-head);">Quản lý cửa hàng @Model.FullName</h3>
+                <span
+                style="background:rgba(123,94,167,.12);color:#c4aff0;padding:6px 20px;border-radius:30px;font-weight:700;border:1px solid rgba(123,94,167,.2);">MANAGER</span>
+                <div style="margin-top:30px;display:flex;flex-direction:column;gap:12px;">
+                    <a href="/Admin/Dashboard" class="btn-primary-custom">📊 Dashboard tổng quan</a>
+                    <a href="/Product" class="btn-secondary-custom">💻 Quản lý sản phẩm</a>
+                    <a href="/Category" class="btn-secondary-custom">🏷️ Quản lý danh mục</a>
+                    <a href="/Order/Manage" class="btn-secondary-custom">📋 Quản lý đơn hàng</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

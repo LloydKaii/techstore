@@ -1,0 +1,37 @@
+@* ============================================================
+   Views/Category/Add.cshtml
+   ============================================================ *@
+@model TechStore.Models.Category
+@{
+    ViewData["Title"] = "Thêm danh mục";
+}
+
+<div class="page-header">
+  <div class="container">
+    <h1><i class="fa-solid fa-plus me-2 text-accent"></i>Thêm danh mục mới</h1>
+  </div>
+</div>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="card-dark p-4">
+        <form asp-action="Add" method="post">
+          <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+          <div class="mb-4">
+            <label asp-for="Name" class="form-label-custom"></label>
+            <input asp-for="Name" class="form-control form-control-dark" placeholder="Ví dụ: Laptop Apple" />
+            <span asp-validation-for="Name" class="text-danger"></span>
+          </div>
+          <div class="mb-4">
+            <label asp-for="Description" class="form-label-custom"></label>
+            <textarea asp-for="Description" class="form-control form-control-dark" rows="3" placeholder="Mô tả danh mục..."></textarea>
+          </div>
+          <div class="d-flex gap-3">
+            <button type="submit" class="btn-primary-custom px-5"><i class="fa-solid fa-floppy-disk me-2"></i>Lưu</button>
+            <a href="/Category" class="btn-secondary-custom px-4"><i class="fa-solid fa-xmark me-1"></i>Hủy</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

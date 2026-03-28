@@ -1,0 +1,52 @@
+@model TechStore.Models.Order
+@{ ViewData["Title"] = $"Đơn hàng #TS{Model.Id:D4}"; }
+<div class="page-header animate-in" style="z-index:2;">
+  <div class="container">
+    <a href="@(User.IsInRole("Admin")||User.IsInRole("Manager")?"/Order/Manage":"/Order/MyOrders")" style="color:var(--muted);text-decoration:none;font-size:.88rem;"><i class="fa-solid fa-arrow-left me-1"></i>Quay lại</a>
+    <h1 style="margin-top:10px;"><i class="fa-solid fa-receipt me-2 text-accent"></i>Đơn hàng #TS@Model.Id.ToString("D4")</h1>
+  </div>
+</div>
+<div class="container py-5" style="position:relative;z-index:2;">
+  <div class="row g-4">
+    <div class="col-lg-8 animate-in">
+      <div class="card-dark p-0" style="overflow:hidden;">
+        <div style="padding:16px 20px;background:var(--card2);border-bottom:1px solid var(--border);"><h6 style="font-family:var(--font-head);font-weight:700;margin:0;">Sản phẩm trong đơn</h6></div>
+        <table class="table-dark-custom">
+          <thead><tr><th>Sản phẩm</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th></tr></thead>
+          <tbody>
+            @foreach(var item in Model.Items){
+              <tr>
+                <td style="font-weight:600;">@item.ProductName</td>
+                <td style="color:var(--muted);">@item.Price.ToString("N0")₫</td>
+                <td style="color:var(--accent);font-weight:700;">x@item.Quantity</td>
+                <td style="color:var(--accent);font-weight:700;">@item.Total.ToString("N0")₫</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;">
+          <div style="font-family:var(--font-head);font-size:1.2rem;font-weight:800;color:var(--accent);">Tổng: @Model.Total.ToString("N0")₫</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 animate-in-delay">
+      <div class="card-dark p-4">
+        <h6 style="font-family:var(--font-head);font-weight:700;margin-bottom:16px;"><i class="fa-solid fa-location-dot text-accent me-2"></i>Thông tin giao hàng</h6>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:.88rem;">
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">Người nhận</span><span style="font-weight:600;">@Model.CustomerName</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted);">SĐT</span><span style="font-weight:600;">@Model.Phone</span></div>
+          <div style="padding:10px 0;border-top:1px solid var(--border);"><span style="color:var(--muted);">Địa chỉ</span><div style="margin-top:4px;font-weight:600;">@Model.Address</div></div>
+          @if(!string.IsNullOrEmpty(Model.Note)){<div><span style="color:var(--muted);">Ghi chú</span><div style="margin-top:4px;">@Model.Note</div></div>}
+          <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border);">
+            <span style="color:var(--muted);">Ngày đặt</span>
+            <span>@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;">
+            <span style="color:var(--muted);">Trạng thái</span>
+            <span style="background:rgba(0,255,255,.1);color:var(--accent);padding:3px 10px;border-radius:99px;font-size:.78rem;font-weight:700;">@Model.Status</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

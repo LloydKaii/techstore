@@ -1,0 +1,42 @@
+@model List<TechStore.Models.WishlistItem>
+@{ ViewData["Title"] = "Wishlist yêu thích"; }
+<div class="page-header animate-in" style="z-index:2;">
+  <div class="container">
+    <h1><i class="fa-solid fa-heart me-2" style="color:#ff6b9d;"></i>Wishlist yêu thích</h1>
+    <p style="color:var(--muted);font-size:.88rem;margin-top:4px;">@Model.Count sản phẩm yêu thích</p>
+  </div>
+</div>
+<div class="container py-5" style="position:relative;z-index:2;">
+  @if(!Model.Any()){
+    <div style="text-align:center;padding:80px 20px;" class="animate-in">
+      <div style="width:80px;height:80px;background:var(--card2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2rem;color:rgba(255,107,157,.3);"><i class="fa-solid fa-heart"></i></div>
+      <h5 style="font-family:var(--font-head);">Chưa có sản phẩm yêu thích</h5>
+      <a href="/Product" class="btn-primary-custom mt-3"><i class="fa-solid fa-laptop"></i>Khám phá sản phẩm</a>
+    </div>
+  } else {
+    <div class="row g-4 animate-in">
+      @foreach(var item in Model){
+        <div class="col-sm-6 col-lg-3">
+          <div class="card-dark p-0" style="overflow:hidden;">
+            @if(!string.IsNullOrEmpty(item.Product?.ImageUrl)){
+              <img src="@item.Product.ImageUrl" style="width:100%;height:180px;object-fit:cover;" alt="@item.Product?.Name"/>
+            } else {
+              <div style="width:100%;height:180px;background:var(--card2);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-image" style="font-size:2rem;color:rgba(255,255,255,.07);"></i></div>
+            }
+            <div style="padding:14px;">
+              <div style="font-weight:600;font-size:.9rem;margin-bottom:6px;">@item.Product?.Name</div>
+              <div style="font-family:var(--font-head);font-weight:800;color:var(--accent);margin-bottom:12px;">@item.Product?.Price.ToString("N0")₫</div>
+              <div style="display:flex;gap:8px;">
+                <a href="/Product/Display/@item.ProductId" class="btn-view-custom" style="flex:1;justify-content:center;font-size:.82rem;"><i class="fa-solid fa-eye"></i>Xem</a>
+                <form asp-action="Remove" asp-controller="Wishlist" method="post">
+                  <input type="hidden" name="id" value="@item.Id"/>
+                  <button type="submit" class="btn-danger-custom" style="font-size:.82rem;"><i class="fa-solid fa-trash"></i></button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "Build PC";
+}
+
+<div class="container mt-5">
+    <h1>Build PC Của Bạn</h1>
+    <div class="row">
+        <!-- Slots -->
+        <div class="col-md-8">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="component-slot p-4 border rounded cursor-pointer" data-type="cpu">
+                        <h5 id="cpuSlot">Chọn CPU</h5>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="component-slot p-4 border rounded cursor-pointer" data-type="ram">
+                        <h5 id="ramSlot">Chọn RAM</h5>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="component-slot p-4 border rounded cursor-pointer" data-type="vga">
+                        <h5 id="vgaSlot">Chọn GPU</h5>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="component-slot p-4 border rounded cursor-pointer" data-type="mainboard">
+                        <h5 id="mainboardSlot">Chọn Mainboard</h5>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="component-slot p-4 border rounded cursor-pointer" data-type="psu">
+                        <h5 id="psuSlot">Chọn PSU</h5>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="component-slot p-4 border rounded cursor-pointer" data-type="ssd">
+                        <h5 id="ssdSlot">Chọn SSD</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 text-center">
+                <h2 id="totalPrice">0 ₫</h2>
+                <button onclick="aiSuggest()" class="btn btn-primary me-2">AI Gợi ý</button>
+                <button onclick="saveBuild()" class="btn btn-success">Lưu Build</button>
+            </div>
+        </div>
+        <!-- Parts list -->
+        <div class="col-md-4">
+            <div id="partsGrid" class="list-group">
+                Click slot to load
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/pcbuilder.js"></script>

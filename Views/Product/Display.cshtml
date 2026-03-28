@@ -1,0 +1,210 @@
+@model TechStore.Models.Product
+@using Microsoft.AspNetCore.Identity
+@inject UserManager<TechStore.Models.ApplicationUser> UserManager
+@inject TechStore.Models.ApplicationDbContext DbCtx
+@{
+    ViewData["Title"] = Model.Name;
+    var user = await UserManager.GetUserAsync(User);
+    var reviews = DbCtx.Reviews.Where(r=>r.ProductId==Model.Id).OrderByDescending(r=>r.CreatedAt).ToList();
+    var avgRating = reviews.Any() ? reviews.Average(r=>r.Rating) : 0;
+    var userReview = user!=null ? reviews.FirstOrDefault(r=>r.UserId==user.Id) : null;
+    var inWishlist = user!=null && DbCtx.WishlistItems.Any(w=>w.UserId==user.Id&&w.ProductId==Model.Id);
+}
+<div class="page-header animate-in" style="z-index:2;">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <a href="/Product" style="color:var(--muted);text-decoration:none;font-size:.88rem;"><i class="fa-solid fa-arrow-left me-1"></i>Sản phẩm</a>
+      @if(Model.Category!=null){<span class="badge-cat">@Model.Category.Name</span>}
+    </div>
+    <h1 style="font-family:var(--font-head);font-size:1.5rem;font-weight:800;margin-top:12px;">@Model.Name</h1>
+  </div>
+</div>
+<div class="container py-5" style="position:relative;z-index:2;">
+  <div class="row g-5">
+    <div class="col-lg-5 animate-in">
+      @if(!string.IsNullOrEmpty(Model.ImageUrl)){
+        <img src="@Model.ImageUrl" style="width:100%;max-height:420px;object-fit:contain;border-radius:var(--r);border:1px solid var(--border);background:linear-gradient(135deg,var(--card2),var(--bg2));padding:16px;" alt="@Model.Name"/>
+      } else {
+        <div style="width:100%;height:380px;background:var(--card2);border-radius:var(--r);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-image" style="font-size:4rem;color:rgba(255,255,255,.06);"></i></div>
+      }
+    </div>
+    <div class="col-lg-7 animate-in-delay">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+        @if(Model.Category!=null){<span class="badge-cat">@Model.Category.Name</span>}
+        <span style="color:var(--success);font-size:.82rem;font-weight:600;"><i class="fa-solid fa-circle-check me-1"></i>Còn hàng</span>
+        @if(reviews.Any()){
+          <span style="color:var(--warning);font-size:.82rem;">
+            <i class="fa-solid fa-star me-1"></i>@avgRating.ToString("F1") (@reviews.Count đánh giá)
+          </span>
+        }
+      </div>
+      <h2 style="font-family:var(--font-head);font-size:1.6rem;font-weight:800;margin-bottom:10px;">@Model.Name</h2>
+      @if(!string.IsNullOrEmpty(Model.Description)){<p style="color:var(--muted);line-height:1.75;margin-bottom:18px;">@Model.Description</p>}
+      <div style="font-family:var(--font-head);font-size:2.2rem;font-weight:800;background:linear-gradient(135deg,var(--accent),#00b8d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:22px;">@Model.Price.ToString("N0")₫</div>
+
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+        <form asp-controller="Cart" asp-action="Add" method="post" style="display:flex;gap:10px;align-items:center;">
+          <input type="hidden" name="productId" value="@Model.Id"/>
+          <div style="display:flex;align-items:center;background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;">
+            <button type="button" onclick="var i=document.getElementById('qi');if(i.value>1)i.value=parseInt(i.value)-1;" style="width:36px;height:44px;background:none;border:none;color:var(--text);cursor:pointer;"><i class="fa-solid fa-minus" style="font-size:.75rem;"></i></button>
+            <input type="number" id="qi" name="qty" value="1" min="1" max="99" style="width:44px;height:44px;background:none;border:none;color:var(--text);text-align:center;font-weight:700;"/>
+            <button type="button" onclick="var i=document.getElementById('qi');if(i.value<99)i.value=parseInt(i.value)+1;" style="width:36px;height:44px;background:none;border:none;color:var(--text);cursor:pointer;"><i class="fa-solid fa-plus" style="font-size:.75rem;"></i></button>
+          </div>
+          <button type="submit" class="btn-primary-custom" style="padding:12px 24px;"><i class="fa-solid fa-bag-shopping"></i>Thêm vào giỏ</button>
+        </form>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:20px;">
+        @if(User.Identity?.IsAuthenticated==true){
+          <form asp-action="Toggle" asp-controller="Wishlist" method="post" style="flex:1;">
+            <input type="hidden" name="productId" value="@Model.Id"/>
+            <button type="submit" style="width:100%;padding:11px;border-radius:var(--r-sm);border:1.5px solid @(inWishlist?"rgba(255,107,157,.4)":"var(--border)");background:@(inWishlist?"rgba(255,107,157,.1)":"rgba(255,255,255,.03)");color:@(inWishlist?"#ff6b9d":"var(--muted)");cursor:pointer;font-family:var(--font-body);font-size:.9rem;font-weight:600;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:7px;">
+              <i class="fa-@(inWishlist?"solid":"regular") fa-heart"></i>@(inWishlist?"Đã yêu thích":"Yêu thích")
+            </button>
+          </form>
+        }
+        <button onclick="openQR()" style="flex:1;padding:11px;border-radius:var(--r-sm);border:1.5px solid var(--border);background:rgba(255,255,255,.03);color:var(--muted);cursor:pointer;font-family:var(--font-body);font-size:.9rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .2s;" onmouseover="this.style.borderColor='rgba(0,255,255,.3)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">
+          <i class="fa-solid fa-qrcode"></i>QR thanh toán
+        </button>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;display:flex;align-items:center;gap:9px;"><i class="fa-solid fa-truck-fast" style="color:var(--success);"></i><span style="font-size:.82rem;font-weight:600;">Giao hàng 24h</span></div>
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;display:flex;align-items:center;gap:9px;"><i class="fa-solid fa-shield-halved" style="color:var(--accent);"></i><span style="font-size:.82rem;font-weight:600;">BH 12 tháng</span></div>
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;display:flex;align-items:center;gap:9px;"><i class="fa-solid fa-rotate-left" style="color:var(--warning);"></i><span style="font-size:.82rem;font-weight:600;">Đổi trả 30 ngày</span></div>
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:11px 14px;display:flex;align-items:center;gap:9px;"><i class="fa-solid fa-headset" style="color:#c4aff0;"></i><span style="font-size:.82rem;font-weight:600;">Hỗ trợ 24/7</span></div>
+      </div>
+
+      @if(User.IsInRole("Admin")||User.IsInRole("Manager")){
+        <div style="padding-top:16px;border-top:1px solid var(--border);display:flex;gap:10px;">
+          <a href="/Product/Update/@Model.Id" class="btn-edit-custom"><i class="fa-solid fa-pen"></i>Chỉnh sửa</a>
+          @if(User.IsInRole("Admin")){<a href="/Product/Delete/@Model.Id" class="btn-danger-custom"><i class="fa-solid fa-trash"></i>Xóa</a>}
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- ĐÁNH GIÁ -->
+  <div style="margin-top:60px;padding-top:40px;border-top:1px solid var(--border);">
+    <h3 class="section-title mb-4"><i class="fa-solid fa-star" style="color:var(--warning);font-size:.9rem;"></i>Đánh giá sản phẩm (@reviews.Count)</h3>
+
+    @if(User.Identity?.IsAuthenticated==true){
+      <div class="card-dark p-4 mb-4">
+        <h6 style="font-family:var(--font-head);font-weight:700;margin-bottom:14px;">@(userReview!=null?"Cập nhật đánh giá của bạn":"Viết đánh giá")</h6>
+        <form asp-action="Add" asp-controller="Review" method="post">
+          <input type="hidden" name="productId" value="@Model.Id"/>
+          <div class="mb-3">
+            <label class="form-label-custom">Điểm đánh giá</label>
+            <div style="display:flex;gap:8px;">
+              @for(int s=1;s<=5;s++){
+                <label style="cursor:pointer;font-size:1.4rem;color:@(userReview!=null&&userReview.Rating>=s?"var(--warning)":"var(--muted)");">
+                  <input type="radio" name="rating" value="@s" style="display:none;" @(userReview?.Rating==s?"checked":"")/>
+                  <i class="fa-@(userReview!=null&&userReview.Rating>=s?"solid":"regular") fa-star" style="transition:color .2s;" onmouseover="highlightStars(@s)" onmouseout="resetStars()"></i>
+                </label>
+              }
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Nhận xét</label>
+            <textarea name="comment" class="form-control form-control-dark" rows="3" placeholder="Chia sẻ trải nghiệm của bạn..." required>@(userReview?.Comment)</textarea>
+          </div>
+          <button type="submit" class="btn-primary-custom"><i class="fa-solid fa-paper-plane"></i>Gửi đánh giá</button>
+        </form>
+      </div>
+    }
+
+    @if(reviews.Any()){
+      <div class="d-flex flex-column gap-3">
+        @foreach(var rv in reviews){
+          <div class="card-dark p-4">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));display:flex;align-items:center;justify-content:center;font-size:.9rem;color:#05080f;font-weight:700;flex-shrink:0;">
+                  @(rv.User?.FullName?.Substring(0,1)?.ToUpper()??"?")
+                </div>
+                <div>
+                  <div style="font-weight:600;font-size:.9rem;">@(rv.User?.FullName??"Ẩn danh")</div>
+                  <div style="display:flex;gap:2px;margin-top:3px;">
+                    @for(int s=1;s<=5;s++){<i class="fa-@(rv.Rating>=s?"solid":"regular") fa-star" style="color:var(--warning);font-size:.75rem;"></i>}
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="color:var(--muted);font-size:.78rem;">@rv.CreatedAt.ToString("dd/MM/yyyy")</span>
+                @if(user?.Id==rv.UserId||User.IsInRole("Admin")){
+                  <form asp-action="Delete" asp-controller="Review" method="post" style="display:inline;">
+                    <input type="hidden" name="id" value="@rv.Id"/>
+                    <button type="submit" class="btn-danger-custom" style="padding:4px 8px;font-size:.75rem;"><i class="fa-solid fa-trash"></i></button>
+                  </form>
+                }
+              </div>
+            </div>
+            <p style="margin-top:12px;color:var(--muted);font-size:.9rem;line-height:1.6;">@rv.Comment</p>
+          </div>
+        }
+      </div>
+    } else {
+      <div style="text-align:center;padding:40px;color:var(--muted);">Chưa có đánh giá nào. Hãy là người đầu tiên!</div>
+    }
+  </div>
+
+  <!-- AI GỢI Ý -->
+  @if(ViewBag.Recommendations!=null){
+    var recs=(List<TechStore.Models.Product>)ViewBag.Recommendations;
+    if(recs.Any()){
+      <div style="margin-top:60px;padding-top:40px;border-top:1px solid var(--border);">
+        <h3 class="section-title mb-4"><i class="fa-solid fa-robot" style="color:var(--accent);font-size:.9rem;"></i>AI gợi ý cho bạn</h3>
+        <div class="row g-3">
+          @foreach(var r in recs){
+            <div class="col-sm-6 col-lg-3">
+              <a href="/Product/Display/@r.Id" style="text-decoration:none;">
+                <div class="card-dark p-0" style="overflow:hidden;">
+                  @if(!string.IsNullOrEmpty(r.ImageUrl)){<img src="@r.ImageUrl" style="width:100%;height:145px;object-fit:cover;" alt="@r.Name"/>}
+                  else{<div style="width:100%;height:145px;background:var(--card2);display:flex;align-items:center;justify-content:center;"><i class="fa-solid fa-image" style="font-size:2rem;color:rgba(255,255,255,.07);"></i></div>}
+                  <div style="padding:14px;">
+                    <div style="font-weight:600;font-size:.88rem;margin-bottom:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">@r.Name</div>
+                    <div style="font-family:var(--font-head);font-weight:800;font-size:.95rem;color:var(--accent);">@r.Price.ToString("N0")₫</div>
+                  </div>
+                </div>
+              </a>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  }
+</div>
+
+<!-- QR MODAL -->
+<div id="qrModal" style="position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(10px);" onclick="if(event.target===this)closeQR()">
+  <div style="background:var(--card);border:1px solid rgba(0,255,255,.2);border-radius:22px;padding:32px;max-width:380px;width:90%;text-align:center;box-shadow:0 30px 90px rgba(0,0,0,.8);" class="animate-in">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <h5 style="font-family:var(--font-head);font-weight:800;margin:0;"><i class="fa-solid fa-qrcode text-accent me-2"></i>Thanh toán QR</h5>
+      <button onclick="closeQR()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:4px;">Quét mã để thanh toán nhanh</p>
+    <div style="background:white;border-radius:14px;padding:14px;display:inline-block;margin:16px 0;box-shadow:0 8px 30px rgba(0,0,0,.4);">
+      <img src="https://img.vietqr.io/image/MB-0123456789-compact2.jpg?amount=@Model.Price&addInfo=TECHSTORE%20@Model.Id&accountName=TECHSTORE" style="width:200px;height:200px;border-radius:8px;" alt="QR" onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=TECHSTORE|@Model.Id|@Model.Price'"/>
+    </div>
+    <div style="background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:14px;text-align:left;">
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.85rem;"><span style="color:var(--muted);">Ngân hàng</span><strong>MB Bank</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:.85rem;"><span style="color:var(--muted);">STK</span><strong>0123456789</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:.85rem;"><span style="color:var(--muted);">Số tiền</span><strong style="color:var(--accent);">@Model.Price.ToString("N0")₫</strong></div>
+    </div>
+    <div style="margin-top:12px;padding:10px;background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.15);border-radius:var(--r-sm);font-size:.82rem;color:var(--success);">
+      <i class="fa-solid fa-circle-check me-1"></i>Nội dung CK: <strong>TECHSTORE @Model.Id</strong>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+function openQR(){document.getElementById('qrModal').style.display='flex';}
+function closeQR(){document.getElementById('qrModal').style.display='none';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeQR();});
+const stars=document.querySelectorAll('input[name="rating"]');
+function highlightStars(n){document.querySelectorAll('.fa-star').forEach((s,i)=>{s.className=i<n?'fa-solid fa-star':'fa-regular fa-star';s.style.color=i<n?'var(--warning)':'var(--muted)';});}
+function resetStars(){const checked=document.querySelector('input[name="rating"]:checked');const n=checked?parseInt(checked.value):0;highlightStars(n);}
+stars.forEach(s=>s.addEventListener('change',()=>resetStars()));
+</script>
+}

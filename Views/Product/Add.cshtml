@@ -1,0 +1,211 @@
+@model TechStore.Models.Product
+@{
+    ViewData["Title"] = "Thêm sản phẩm";
+}
+
+<style>
+  .form-section {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 0;
+  }
+
+  .form-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden;
+  }
+
+  .form-card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--card2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .form-card-header h5 {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .form-card-body { padding: 24px; }
+
+  .input-group-custom {
+    position: relative;
+  }
+
+  .input-suffix {
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: .82rem;
+    font-weight: 600;
+    pointer-events: none;
+  }
+
+  .img-preview-box {
+    background: var(--bg2);
+    border: 2px dashed var(--border);
+    border-radius: var(--r);
+    padding: 20px;
+    text-align: center;
+    transition: border-color .2s;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .img-preview-box.has-image {
+    border-style: solid;
+    border-color: var(--border-accent);
+    padding: 10px;
+  }
+</style>
+
+<!-- PAGE HEADER -->
+<div class="form-section animate-in">
+  <div class="container">
+    <div class="d-flex align-items-center gap-3">
+      <a href="/Product" style="color:var(--muted);text-decoration:none;font-size:.88rem;display:flex;align-items:center;gap:5px;">
+        <i class="fa-solid fa-arrow-left"></i> Sản phẩm
+      </a>
+      <span style="color:var(--border);"> / </span>
+      <span style="font-size:.88rem;color:var(--text);">Thêm mới</span>
+    </div>
+    <h1 style="font-family:var(--font-head);font-size:1.65rem;font-weight:800;margin-top:12px;letter-spacing:-.4px;">
+      <i class="fa-solid fa-plus me-2 text-accent"></i>Thêm sản phẩm mới
+    </h1>
+  </div>
+</div>
+
+<div class="container py-5">
+  <form asp-action="Add" method="post">
+    <div asp-validation-summary="ModelOnly" class="alert-custom mb-4" style="background:rgba(255,77,109,.1);border-color:rgba(255,77,109,.25);color:#ff6b85;"></div>
+
+    <div class="row g-4">
+      <!-- CỘT TRÁI: Thông tin -->
+      <div class="col-lg-7 animate-in">
+        <div class="form-card">
+          <div class="form-card-header">
+            <i class="fa-solid fa-circle-info text-accent"></i>
+            <h5>Thông tin sản phẩm</h5>
+          </div>
+          <div class="form-card-body">
+            <div class="row g-3">
+
+              <div class="col-12">
+                <label asp-for="Name" class="form-label-custom">Tên sản phẩm</label>
+                <input asp-for="Name" class="form-control form-control-dark"
+                       placeholder="Ví dụ: Laptop ASUS VivoBook 15"/>
+                <span asp-validation-for="Name" class="text-danger mt-1 d-block"></span>
+              </div>
+
+              <div class="col-sm-6">
+                <label asp-for="Price" class="form-label-custom">Giá bán</label>
+                <div class="input-group-custom">
+                  <input asp-for="Price" class="form-control form-control-dark"
+                         style="padding-right:36px;" placeholder="0"/>
+                  <span class="input-suffix">₫</span>
+                </div>
+                <span asp-validation-for="Price" class="text-danger mt-1 d-block"></span>
+              </div>
+
+              <div class="col-sm-6">
+                <label asp-for="CategoryId" class="form-label-custom">Danh mục</label>
+                <select asp-for="CategoryId" asp-items="ViewBag.Categories"
+                        class="form-control form-control-dark">
+                  <option value="">-- Chọn danh mục --</option>
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger mt-1 d-block"></span>
+              </div>
+
+              <div class="col-12">
+                <label asp-for="Description" class="form-label-custom">Mô tả</label>
+                <textarea asp-for="Description" class="form-control form-control-dark"
+                          rows="4" placeholder="Mô tả chi tiết sản phẩm..."></textarea>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CỘT PHẢI: Ảnh + Actions -->
+      <div class="col-lg-5 animate-in-delay">
+
+        <!-- Ảnh -->
+        <div class="form-card mb-4">
+          <div class="form-card-header">
+            <i class="fa-solid fa-image text-accent"></i>
+            <h5>Hình ảnh</h5>
+          </div>
+          <div class="form-card-body">
+            <div id="imgPreviewBox" class="img-preview-box mb-3">
+              <i class="fa-solid fa-image" style="font-size:2rem;color:rgba(255,255,255,.1);"></i>
+              <span style="font-size:.82rem;color:var(--muted);">Preview ảnh</span>
+            </div>
+            <label asp-for="ImageUrl" class="form-label-custom">URL hình ảnh</label>
+            <input asp-for="ImageUrl" id="imgUrlInput" class="form-control form-control-dark"
+                   placeholder="https://example.com/image.jpg"/>
+            <p style="font-size:.76rem;color:var(--muted);margin-top:6px;">
+              Dán link ảnh từ internet. Ảnh preview ngay khi nhập.
+            </p>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="form-card">
+          <div class="form-card-body">
+            <div class="d-flex flex-column gap-2">
+              <button type="submit" class="btn-primary-custom justify-content-center" style="padding:13px;">
+                <i class="fa-solid fa-floppy-disk"></i> Lưu sản phẩm
+              </button>
+              <a href="/Product" class="btn-secondary-custom justify-content-center" style="padding:12px;text-align:center;">
+                <i class="fa-solid fa-xmark"></i> Hủy
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </form>
+</div>
+
+@section Scripts {
+<script>
+  const urlInput = document.getElementById('imgUrlInput');
+  const previewBox = document.getElementById('imgPreviewBox');
+
+  urlInput.addEventListener('input', function() {
+    const url = this.value.trim();
+    if (!url) {
+      previewBox.innerHTML = '<i class="fa-solid fa-image" style="font-size:2rem;color:rgba(255,255,255,.1);"></i><span style="font-size:.82rem;color:var(--muted);">Preview ảnh</span>';
+      previewBox.classList.remove('has-image');
+      return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      previewBox.innerHTML = '';
+      previewBox.appendChild(img);
+      previewBox.classList.add('has-image');
+      img.style.cssText = 'max-width:100%;max-height:220px;border-radius:8px;object-fit:contain;';
+    };
+    img.onerror = () => {
+      previewBox.innerHTML = '<i class="fa-solid fa-triangle-exclamation" style="font-size:1.5rem;color:var(--danger);"></i><span style="font-size:.82rem;color:var(--muted);">URL không hợp lệ</span>';
+      previewBox.classList.remove('has-image');
+    };
+    img.src = url;
+  });
+</script>
+}

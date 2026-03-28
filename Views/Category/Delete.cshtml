@@ -1,0 +1,35 @@
+@model TechStore.Models.Category
+@{ ViewData["Title"] = "Xóa danh mục"; }
+
+<div class="page-header">
+  <div class="container">
+    <h1 style="color:#ff6b7a;"><i class="fa-solid fa-triangle-exclamation me-2"></i>Xác nhận xóa danh mục</h1>
+  </div>
+</div>
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-5">
+      <div class="card-dark p-4" style="border-color:rgba(255,71,87,.3);">
+        <div class="mb-4 pb-4" style="border-bottom:1px solid #1e2d45;">
+          <h4 style="font-family:'Sora',sans-serif;color:#f0f4ff;">@Model.Name</h4>
+          @if (!string.IsNullOrEmpty(Model.Description))
+          {
+            <p style="color:#8899aa;margin:8px 0 0;font-size:.9rem;">@Model.Description</p>
+          }
+        </div>
+        <div style="background:rgba(255,71,87,.08);border:1px solid rgba(255,71,87,.25);border-radius:10px;padding:14px;margin-bottom:24px;">
+          <p style="color:#ff6b7a;margin:0;font-size:.88rem;"><i class="fa-solid fa-circle-exclamation me-2"></i>Hành động này không thể hoàn tác.</p>
+        </div>
+        <form asp-action="DeleteConfirmed" method="post">
+          <input type="hidden" asp-for="Id" />
+          <div class="d-flex gap-3">
+            <button type="submit" style="background:#ff4757;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-weight:700;cursor:pointer;flex:1;">
+              <i class="fa-solid fa-trash me-2"></i>Xóa
+            </button>
+            <a href="/Category" class="btn-secondary-custom px-4" style="flex:1;text-align:center;"><i class="fa-solid fa-xmark me-1"></i>Hủy</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

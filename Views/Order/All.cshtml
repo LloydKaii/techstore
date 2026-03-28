@@ -1,0 +1,42 @@
+@model List<TechStore.Models.Order>
+@{ ViewData["Title"] = "Quản lý đơn hàng"; }
+<div class="page-header animate-in" style="z-index:2;">
+  <div class="container">
+    <a href="/Admin/Dashboard" style="color:var(--muted);text-decoration:none;font-size:.88rem;"><i class="fa-solid fa-arrow-left me-1"></i>Dashboard</a>
+    <h1 style="margin-top:10px;"><i class="fa-solid fa-bag-shopping me-2 text-accent"></i>Quản lý đơn hàng</h1>
+  </div>
+</div>
+<div class="container py-5" style="position:relative;z-index:2;">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;" class="animate-in">
+    <table class="table-dark-custom">
+      <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>SĐT</th><th>Tổng tiền</th><th>Trạng thái</th><th>Ngày đặt</th><th style="text-align:right;">Cập nhật</th></tr></thead>
+      <tbody>
+        @foreach(var o in Model){
+          <tr>
+            <td><a href="/Order/Detail/@o.Id" style="color:var(--accent);font-weight:700;">#TS@o.Id.ToString("D4")</a></td>
+            <td style="font-weight:600;">@o.CustomerName</td>
+            <td style="color:var(--muted);font-size:.85rem;">@o.Phone</td>
+            <td style="color:var(--accent);font-weight:700;">@o.Total.ToString("N0")₫</td>
+            <td>
+              <span style="background:@(o.Status=="Hoàn thành"?"rgba(52,211,153,.12)":o.Status=="Đã hủy"?"rgba(255,77,109,.1)":o.Status=="Đang giao"?"rgba(0,255,255,.1)":"rgba(251,191,36,.1)");color:@(o.Status=="Hoàn thành"?"var(--success)":o.Status=="Đã hủy"?"#ff7a8a":o.Status=="Đang giao"?"var(--accent)":"var(--warning)");padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:700;">@o.Status</span>
+            </td>
+            <td style="color:var(--muted);font-size:.82rem;">@o.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+            <td style="text-align:right;">
+              <form asp-action="UpdateStatus" asp-controller="Order" method="post" style="display:flex;gap:6px;justify-content:flex-end;">
+                <input type="hidden" name="id" value="@o.Id"/>
+                <select name="status" class="form-control-dark" style="padding:5px 10px!important;font-size:.8rem!important;width:auto;">
+                  @foreach(var s in new[]{"Chờ xác nhận","Đã xác nhận","Đang giao","Hoàn thành","Đã hủy"}){
+                    if(o.Status==s){<option value="@s" selected>@s</option>}
+                    else{<option value="@s">@s</option>}
+                  }
+                </select>
+                <button type="submit" class="btn-edit-custom" style="padding:5px 10px;font-size:.8rem;"><i class="fa-solid fa-check"></i></button>
+              </form>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+    @if(!Model.Any()){<div style="text-align:center;padding:50px;color:var(--muted);">Chưa có đơn hàng nào</div>}
+  </div>
+</div>

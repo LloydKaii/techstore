@@ -1,0 +1,29 @@
+## Ignore Visual Studio / VSCode temporary files
+**/*.user
+**/*.userosscache
+**/*.suo
+**/*.sln.docstates
+**/*.code-workspace
+
+## Ignore Bin and Obj folders
+**/bin/
+**/obj/
+
+## Ignore appsettings secrets
+appsettings*.json
+
+## Ignore packages
+**/*.nupkg
+packages/
+
+## Ignore EF migrations if local
+**/Migrations/*.db
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Logs
+logs/
+*.log
+

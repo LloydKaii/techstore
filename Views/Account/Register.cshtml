@@ -1,0 +1,58 @@
+@model TechStore.ViewModels.RegisterViewModel
+@{ ViewData["Title"] = "Đăng ký"; }
+
+<style>
+.auth-wrap{min-height:calc(100vh - 130px);display:flex;align-items:center;justify-content:center;padding:40px 16px;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(0,255,255,.05) 0%,transparent 60%);}
+.auth-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:40px;width:100%;max-width:440px;}
+.divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--muted);font-size:.8rem;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
+</style>
+
+<div class="auth-wrap">
+  <div class="auth-card animate-in">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));font-size:1.3rem;color:#080c14;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;">
+        <i class="fa-solid fa-user-plus"></i>
+      </div>
+      <h2 style="font-family:var(--font-head);font-size:1.4rem;font-weight:800;">Tạo tài khoản</h2>
+      <p style="color:var(--muted);font-size:.88rem;margin-top:4px;">Đăng ký để mua sắm tại TechStore</p>
+    </div>
+
+    <form asp-action="Register" method="post">
+      <div asp-validation-summary="ModelOnly" class="alert-custom alert-error mb-3" style="font-size:.85rem;"></div>
+
+      <div class="mb-3">
+        <label asp-for="FullName" class="form-label-custom">Họ và tên</label>
+        <input asp-for="FullName" class="form-control form-control-dark" placeholder="Nguyễn Văn A" autofocus/>
+        <span asp-validation-for="FullName" class="text-danger d-block mt-1"></span>
+      </div>
+
+      <div class="mb-3">
+        <label asp-for="Email" class="form-label-custom">Email</label>
+        <input asp-for="Email" class="form-control form-control-dark" placeholder="you@example.com"/>
+        <span asp-validation-for="Email" class="text-danger d-block mt-1"></span>
+      </div>
+
+      <div class="mb-3">
+        <label asp-for="Password" class="form-label-custom">Mật khẩu</label>
+        <input asp-for="Password" type="password" class="form-control form-control-dark" placeholder="Ít nhất 6 ký tự, có chữ số"/>
+        <span asp-validation-for="Password" class="text-danger d-block mt-1"></span>
+      </div>
+
+      <div class="mb-4">
+        <label asp-for="ConfirmPassword" class="form-label-custom">Xác nhận mật khẩu</label>
+        <input asp-for="ConfirmPassword" type="password" class="form-control form-control-dark" placeholder="Nhập lại mật khẩu"/>
+        <span asp-validation-for="ConfirmPassword" class="text-danger d-block mt-1"></span>
+      </div>
+
+      <button type="submit" class="btn-primary-custom w-100 justify-content-center" style="padding:13px;">
+        <i class="fa-solid fa-user-plus"></i> Tạo tài khoản
+      </button>
+    </form>
+
+    <div class="divider">hoặc</div>
+    <div style="text-align:center;font-size:.88rem;color:var(--muted);">
+      Đã có tài khoản? <a href="/Account/Login" style="color:var(--accent);font-weight:600;text-decoration:none;">Đăng nhập</a>
+    </div>
+  </div>
+</div>

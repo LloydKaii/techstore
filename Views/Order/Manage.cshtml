@@ -1,0 +1,118 @@
+@model IEnumerable<TechStore.Models.Order>
+@{ 
+    ViewData["Title"] = "Quản lý đơn hàng";
+    var statuses = (string[])ViewBag.Statuses;
+    string? currentStatus = ViewBag.CurrentStatus;
+}
+
+<div class="page-header animate-in">
+  <div class="container">
+    <a href="/Admin/Dashboard" style="color:var(--muted);text-decoration:none;font-size:.88rem;"><i class="fa-solid fa-arrow-left me-1"></i>Dashboard</a>
+    <h1 style="margin-top:12px;"><i class="fa-solid fa-bag-shopping me-2 text-accent"></i>Quản lý đơn hàng</h1>
+    <p style="color:var(--muted);font-size:.85rem;margin-top:4px;">
+      @if(currentStatus != null){
+        <span>Lọc: <strong style="color:var(--accent);">@currentStatus</strong> · </span>
+      }
+      Tổng <strong>@Model.Count()</strong> đơn
+    </p>
+  </div>
+</div>
+
+<div class="container py-5">
+  <!-- Filter tabs -->
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;" class="animate-in">
+    <a href="/Order/Manage" class="btn-@(currentStatus==null?"primary":"secondary")-custom" style="padding:8px 16px;font-size:.84rem;">
+      <i class="fa-solid fa-list me-1"></i>Tất cả
+    </a>
+    @foreach(var s in statuses){
+      <a href="/Order/Manage?status=@Uri.EscapeDataString(s)"
+         class="btn-@(currentStatus==s?"primary":"secondary")-custom"
+         style="padding:8px 16px;font-size:.84rem;">@s</a>
+    }
+  </div>
+
+  @if(TempData["Success"] != null){
+    <div class="alert mb-4" style="background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.25);color:var(--success);border-radius:var(--r-sm);padding:12px 16px;">
+      <i class="fa-solid fa-circle-check me-2"></i>@TempData["Success"]
+    </div>
+  }
+
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;" class="animate-in-delay">
+    @if(!Model.Any()){
+      <div style="text-align:center;padding:60px;color:var(--muted);">
+        <i class="fa-solid fa-bag-shopping" style="font-size:2.5rem;margin-bottom:14px;display:block;color:rgba(255,255,255,.08);"></i>
+        Không có đơn hàng nào.
+      </div>
+    } else {
+      <table class="table-dark-custom">
+        <thead>
+          <tr>
+            <th>#Đơn</th>
+            <th>Khách hàng</th>
+            <th>SĐT</th>
+            <th>SP</th>
+            <th>Tổng tiền</th>
+            <th>Ngày đặt</th>
+            <th>Trạng thái</th>
+            <th style="text-align:right;">Thao tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach(var o in Model){
+            <tr>
+              <td style="font-family:var(--font-head);font-weight:700;color:var(--accent);font-size:.88rem;">#TS@o.Id.ToString("D4")</td>
+              <td>
+                <div style="font-weight:600;font-size:.9rem;">@o.CustomerName</div>
+                <div style="font-size:.75rem;color:var(--muted);max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">@o.Address</div>
+              </td>
+              <td style="font-size:.88rem;">@o.Phone</td>
+              <td style="color:var(--muted);font-size:.85rem;">@o.Items.Count sp</td>
+              <td style="color:var(--accent);font-weight:700;font-family:var(--font-head);">@o.Total.ToString("N0")₫</td>
+              <td style="font-size:.82rem;color:var(--muted);">@o.OrderDate.ToString("dd/MM/yy HH:mm")</td>
+              <td>
+                @if(o.Status == "Hoàn thành"){
+                  <span style="background:rgba(52,211,153,.1);color:var(--success);padding:4px 10px;border-radius:99px;font-size:.72rem;font-weight:700;">@o.Status</span>
+                } else if(o.Status == "Đang giao"){
+                  <span style="background:rgba(0,255,255,.1);color:var(--accent);padding:4px 10px;border-radius:99px;font-size:.72rem;font-weight:700;">@o.Status</span>
+                } else if(o.Status == "Đã xác nhận"){
+                  <span style="background:rgba(123,94,167,.12);color:#c4aff0;padding:4px 10px;border-radius:99px;font-size:.72rem;font-weight:700;">@o.Status</span>
+                } else if(o.Status == "Đã hủy"){
+                  <span style="background:rgba(255,77,109,.1);color:#ff7a8a;padding:4px 10px;border-radius:99px;font-size:.72rem;font-weight:700;">@o.Status</span>
+                } else {
+                  <span style="background:rgba(251,191,36,.1);color:var(--warning);padding:4px 10px;border-radius:99px;font-size:.72rem;font-weight:700;">@o.Status</span>
+                }
+              </td>
+              <td style="text-align:right;">
+                <div style="display:flex;gap:6px;justify-content:flex-end;">
+                  <a href="/Order/Detail/@o.Id" class="btn-view-custom" style="padding:5px 10px;font-size:.78rem;" title="Xem chi tiết">
+                    <i class="fa-solid fa-eye"></i>
+                  </a>
+                  <div class="dropdown">
+                    <button class="btn-edit-custom dropdown-toggle" data-bs-toggle="dropdown" style="padding:5px 10px;font-size:.78rem;" title="Đổi trạng thái">
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" style="background:var(--card2);border:1px solid var(--border);border-radius:var(--r);padding:6px;min-width:170px;box-shadow:0 8px 32px rgba(0,0,0,.4);">
+                      @foreach(var s in statuses){
+                        <li>
+                          <form asp-controller="Order" asp-action="UpdateStatus" method="post" style="margin:0;">
+                            <input type="hidden" name="id" value="@o.Id"/>
+                            <input type="hidden" name="status" value="@s"/>
+                            <input type="hidden" name="returnStatus" value="@currentStatus"/>
+                            <button type="submit"
+                              style="background:@(o.Status==s?"rgba(0,255,255,.08)":"none");border:none;color:@(o.Status==s?"var(--accent)":"var(--muted)");font-size:.84rem;padding:9px 14px;width:100%;text-align:left;cursor:pointer;border-radius:var(--r-sm);font-family:var(--font-body);">
+                              @s @if(o.Status==s){ <text>✓</text> }
+                            </button>
+                          </form>
+                        </li>
+                      }
+                    </ul>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>

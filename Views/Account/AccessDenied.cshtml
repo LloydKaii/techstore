@@ -1,0 +1,14 @@
+@{ ViewData["Title"] = "Không có quyền truy cập"; }
+<div style="min-height:calc(100vh - 130px);display:flex;align-items:center;justify-content:center;padding:40px 16px;">
+  <div style="text-align:center;max-width:400px;" class="animate-in">
+    <div style="width:80px;height:80px;background:rgba(255,77,109,.12);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2rem;color:var(--danger);">
+      <i class="fa-solid fa-lock"></i>
+    </div>
+    <h2 style="font-family:var(--font-head);font-size:1.6rem;font-weight:800;margin-bottom:10px;">Không có quyền</h2>
+    <p style="color:var(--muted);margin-bottom:24px;">Bạn không có quyền truy cập trang này. Chỉ Admin mới được phép.</p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <a href="/" class="btn-primary-custom"><i class="fa-solid fa-house"></i> Trang chủ</a>
+      <a href="/Account/Login" class="btn-secondary-custom"><i class="fa-solid fa-right-to-bracket"></i> Đăng nhập</a>
+    </div>
+  </div>
+</div>

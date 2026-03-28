@@ -1,0 +1,53 @@
+@model TechStore.Models.Product
+@{
+    ViewData["Title"] = "Xóa sản phẩm";
+}
+
+<div class="page-header">
+  <div class="container">
+    <h1 style="color:#ff6b7a;"><i class="fa-solid fa-triangle-exclamation me-2"></i>Xác nhận xóa sản phẩm</h1>
+  </div>
+</div>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-6">
+      <div class="card-dark p-4" style="border-color:rgba(255,71,87,.3);">
+        <!-- Thông tin sản phẩm sắp xóa -->
+        <div class="d-flex gap-4 align-items-center mb-4 pb-4" style="border-bottom:1px solid #1e2d45;">
+          @if (!string.IsNullOrEmpty(Model.ImageUrl))
+          {
+            <img src="@Model.ImageUrl" style="width:80px;height:80px;border-radius:10px;object-fit:cover;border:1px solid #1e2d45;" alt="@Model.Name"/>
+          }
+          <div>
+            <span style="background:rgba(0,212,255,.1);color:var(--accent);padding:2px 10px;border-radius:50px;font-size:.75rem;font-weight:700;">@(Model.Category?.Name ?? "—")</span>
+            <h4 style="font-family:'Sora',sans-serif;font-weight:700;color:#f0f4ff;margin:8px 0 4px;">@Model.Name</h4>
+            <p style="color:var(--accent);font-weight:800;margin:0;font-size:1.1rem;">@Model.Price.ToString("N0")₫</p>
+          </div>
+        </div>
+
+        <!-- Cảnh báo -->
+        <div style="background:rgba(255,71,87,.08);border:1px solid rgba(255,71,87,.25);border-radius:10px;padding:16px;margin-bottom:24px;">
+          <p style="color:#ff6b7a;margin:0;font-size:.9rem;">
+            <i class="fa-solid fa-circle-exclamation me-2"></i>
+            <strong>Lưu ý:</strong> Hành động này không thể hoàn tác. Sản phẩm sẽ bị xóa vĩnh viễn khỏi hệ thống.
+          </p>
+        </div>
+
+        <!-- Buttons -->
+        <form asp-action="DeleteConfirmed" method="post">
+          <input type="hidden" asp-for="Id" />
+          <div class="d-flex gap-3">
+            <button type="submit" style="background:#ff4757;color:#fff;border:none;padding:10px 24px;border-radius:8px;font-weight:700;cursor:pointer;transition:all .2s;flex:1;"
+                    onmouseover="this.style.background='#ff2d3f'" onmouseout="this.style.background='#ff4757'">
+              <i class="fa-solid fa-trash me-2"></i>Xác nhận xóa
+            </button>
+            <a href="/Product/Display/@Model.Id" class="btn-secondary-custom px-4" style="flex:1;text-align:center;">
+              <i class="fa-solid fa-xmark me-1"></i>Hủy
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

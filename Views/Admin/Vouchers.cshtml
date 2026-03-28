@@ -1,0 +1,63 @@
+@model List<TechStore.Models.Voucher>
+@{ ViewData["Title"] = "Mã giảm giá"; }
+<div class="page-header animate-in" style="z-index:2;">
+  <div class="container">
+    <a href="/Admin/Dashboard" style="color:var(--muted);text-decoration:none;font-size:.88rem;"><i class="fa-solid fa-arrow-left me-1"></i>Dashboard</a>
+    <h1 style="margin-top:10px;"><i class="fa-solid fa-ticket me-2 text-accent"></i>Mã giảm giá</h1>
+  </div>
+</div>
+<div class="container py-5" style="position:relative;z-index:2;">
+  <div class="row g-4">
+    <div class="col-lg-4 animate-in">
+      <div class="card-dark p-4">
+        <h6 style="font-family:var(--font-head);font-weight:700;margin-bottom:16px;"><i class="fa-solid fa-plus text-accent me-2"></i>Tạo voucher mới</h6>
+        <form asp-action="AddVoucher" asp-controller="Admin" method="post">
+          <div class="mb-3">
+            <label class="form-label-custom">Mã voucher</label>
+            <input name="code" class="form-control form-control-dark" placeholder="VD: SUMMER20" required/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Giảm giá (%)</label>
+            <input name="discountPercent" type="number" min="1" max="90" value="10" class="form-control form-control-dark"/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label-custom">Giới hạn sử dụng</label>
+            <input name="usageLimit" type="number" value="100" class="form-control form-control-dark"/>
+          </div>
+          <div class="mb-4">
+            <label class="form-label-custom">Hạn dùng (ngày)</label>
+            <input name="days" type="number" value="30" class="form-control form-control-dark"/>
+          </div>
+          <button type="submit" class="btn-primary-custom w-100 justify-content-center"><i class="fa-solid fa-plus"></i>Tạo voucher</button>
+        </form>
+      </div>
+    </div>
+    <div class="col-lg-8 animate-in-delay">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
+        <table class="table-dark-custom">
+          <thead><tr><th>Mã</th><th>Giảm</th><th>Đã dùng</th><th>Hết hạn</th><th>Trạng thái</th><th style="text-align:right;">Hành động</th></tr></thead>
+          <tbody>
+            @foreach(var v in Model){
+              <tr>
+                <td style="font-family:var(--font-head);font-weight:700;color:var(--accent);">@v.Code</td>
+                <td><span style="background:rgba(52,211,153,.1);color:var(--success);padding:3px 10px;border-radius:99px;font-size:.78rem;font-weight:700;">-@v.DiscountPercent%</span></td>
+                <td style="color:var(--muted);">@v.UsedCount / @v.UsageLimit</td>
+                <td style="color:var(--muted);font-size:.82rem;">@v.ExpiryDate.ToString("dd/MM/yyyy")</td>
+                <td>
+                  @if(v.IsActive&&v.ExpiryDate>DateTime.Now){<span style="background:rgba(52,211,153,.1);color:var(--success);padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:700;">Hoạt động</span>}
+                  else{<span style="background:rgba(255,77,109,.1);color:#ff7a8a;padding:3px 10px;border-radius:99px;font-size:.72rem;font-weight:700;">Tắt</span>}
+                </td>
+                <td style="text-align:right;">
+                  <form asp-action="ToggleVoucher" asp-controller="Admin" method="post" style="display:inline;">
+                    <input type="hidden" name="id" value="@v.Id"/>
+                    <button type="submit" class="@(v.IsActive?"btn-danger-custom":"btn-edit-custom")" style="padding:5px 12px;font-size:.8rem;">@(v.IsActive?"Tắt":"Bật")</button>
+                  </form>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

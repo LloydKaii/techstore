@@ -1,0 +1,22 @@
+@model TechStore.Models.ApplicationUser
+@{
+    ViewData["Title"] = "Hồ sơ admin";
+}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card-dark p-5 text-center">
+                <h3 style="font-family:var(--font-head);">Admin @Model.FullName</h3>
+                <span
+                style="background:rgba(0,255,255,.12);color:var(--accent);padding:6px 20px;border-radius:30px;font-weight:700;border:1px solid rgba(0,255,255,.2);">ADMIN</span>
+                <div style="margin-top:30px;display:flex;flex-direction:column;gap:12px;">
+                    <a href="/Admin/Dashboard" class="btn-primary-custom">📊 Dashboard</a>
+                    <a href="/Admin/Users" class="btn-secondary-custom">👥 Quản lý users</a>
+                    <a href="/Admin/Vouchers" class="btn-secondary-custom">🎟️ Mã giảm giá</a>
+                    <a href="/Order/Manage" class="btn-secondary-custom">📋 Đơn hàng</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
