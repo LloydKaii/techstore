@@ -14,6 +14,7 @@ builder.Services.AddSession(o => { o.IdleTimeout = TimeSpan.FromMinutes(60); o.C
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CartService>();
 builder.Services.AddScoped<TechStore.Services.AIService>();
+builder.Services.AddScoped<PCBuildService>();
 
 // EF Core
 builder.Services.AddDbContext<ApplicationDbContext>(o => o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));

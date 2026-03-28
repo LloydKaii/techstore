@@ -50,6 +50,9 @@ namespace TechStore.Repositories
         public Task<Product?> GetByIdAsync(int id)
             => Task.FromResult(_products.FirstOrDefault(p => p.Id == id));
 
+        public Task<IEnumerable<Product>?> GetByCategoryAsync(string categoryName)
+            => Task.FromResult<IEnumerable<Product>?>(_products.Where(p => p.Category?.Name == categoryName).ToList());
+
         public Task AddAsync(Product product)
         {
             product.Id = _products.Any() ? _products.Max(p => p.Id) + 1 : 1;

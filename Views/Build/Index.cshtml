@@ -1,64 +1,485 @@
 @{
-  ViewData["Title"] = "PC Builder";
+    ViewData["Title"] = "Build PC AI";
+    var cpus = ViewBag.CPUs ?? new List<Product>();
+    var gpus = ViewBag.GPUs ?? new List<Product>();
+    var rams = ViewBag.RAMs ?? new List<Product>();
+    var storages = ViewBag.Storages ?? new List<Product>();
+    var motherboards = ViewBag.Motherboards ?? new List<Product>();
+    var psus = ViewBag.PSUs ?? new List<Product>();
+    var cases = ViewBag.Cases ?? new List<Product>();
 }
 
-<div class="container mt-5">
-  <h1 class="mb-4">PC Builder <i class="fa-solid fa-screwdriver-wrench text-primary"></i></h1>
-    
-  <div class="row mb-5">
-    <div class="col-md-2">
-      <div class="component-slot border p-3 rounded text-center cursor-pointer mb-3" data-type="CPU">
-        <i class="fa-solid fa-microchip fa-2x mb-2"></i>
-        <div id="cpuSlot">CPU</div>
-      </div>
+<!-- PAGE HEADER -->
+<div style="background: linear-gradient(160deg, rgba(10,15,30,.95) 0%, rgba(15,22,35,.95) 100%); border-bottom: 1px solid var(--border); padding: 40px 0; position: relative; overflow: hidden; z-index: 2;">
+    <div class="container">
+        <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 12px;">
+            <i class="fa-solid fa-microchip" style="font-size: 2rem; color: var(--accent);"></i>
+            <h1 style="margin: 0; font-size: 2.5rem; font-weight: 800;">🤖 Build PC AI</h1>
+        </div>
+        <p class="text-muted">AI sẽ gợi ý cấu hình tối ưu dựa trên nhu cầu & ngân sách của bạn</p>
     </div>
-    <div class="col-md-2">
-      <div class="component-slot border p-3 rounded text-center cursor-pointer mb-3" data-type="RAM">
-        <i class="fa-solid fa-memory fa-2x mb-2"></i>
-        <div id="ramSlot">RAM</div>
-      </div>
-    </div>
-    <div class="col-md-2">
-      <div class="component-slot border p-3 rounded text-center cursor-pointer mb-3" data-type="VGA">
-        <i class="fa-solid fa-gpu-board fa-2x mb-2"></i>
-        <div id="vgaSlot">VGA</div>
-      </div>
-    </div>
-    <div class="col-md-2">
-      <div class="component-slot border p-3 rounded text-center cursor-pointer mb-3" data-type="Mainboard">
-        <i class="fa-solid fa-motherboard fa-2x mb-2"></i>
-        <div id="mainboardSlot">Mainboard</div>
-      </div>
-    </div>
-    <div class="col-md-2">
-      <div class="component-slot border p-3 rounded text-center cursor-pointer mb-3" data-type="PSU">
-        <i class="fa-solid fa-bolt fa-2x mb-2"></i>
-        <div id="psuSlot">PSU</div>
-      </div>
-    </div>
-    <div class="col-md-2">
-      <div class="component-slot border p-3 rounded text-center cursor-pointer mb-3" data-type="SSD">
-        <i class="fa-solid fa-hard-drive fa-2x mb-2"></i>
-        <div id="ssdSlot">SSD</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="row">
-    <div class="col-md-8">
-      <h4>Linh kiện (<span id="currentType">CPU</span>)</h4>
-      <div id="partsGrid" class="border p-4 bg-light rounded" style="min-height: 300px;">
-        Click nút trên để load linh kiện
-      </div>
-    </div>
-    <div class="col-md-4">
-      <h3>Build hiện tại</h3>
-      <div id="selected" class="border p-3 bg-white rounded mb-4"></div>
-      <h2 class="text-success" id="total">0 ₫</h2>
-      <button class="btn btn-primary btn-lg me-2" onclick="autoBuild()">AI Gợi ý</button>
-      <button class="btn btn-success btn-lg" onclick="saveBuild()">Lưu Build</button>
-    </div>
-  </div>
 </div>
 
-<script src="~/js/pcbuilder.js"></script>
+<!-- MAIN CONTENT -->
+<div class="container-fluid py-5">
+    <div class="row g-5">
+        
+        <!-- LEFT: CONFIGURATION INPUT -->
+        <div class="col-lg-4">
+            <div class="card-dark p-4" style="position: sticky; top: 120px; border-radius: var(--r);">
+                
+                <h4 class="section-title mb-4">⚙️ Cấu Hình Build</h4>
+                
+                <!-- Purpose Selection -->
+                <div class="mb-4">
+                    <label class="form-label-custom">Mục Đích Sử Dụng</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <button type="button" 
+                                onclick="selectPurpose(this, 'gaming')" 
+                                class="purpose-btn"
+                                style="padding: 12px; background: rgba(0,255,255,.1); border: 2px solid var(--border); color: var(--text); border-radius: var(--r-sm); cursor: pointer; font-weight: 600; transition: all .2s;">
+                            🎮 Gaming
+                        </button>
+                        <button type="button" 
+                                onclick="selectPurpose(this, 'office')" 
+                                class="purpose-btn"
+                                style="padding: 12px; background: rgba(255,255,255,.04); border: 2px solid var(--border); color: var(--muted); border-radius: var(--r-sm); cursor: pointer; font-weight: 600; transition: all .2s;">
+                            💼 Office
+                        </button>
+                        <button type="button" 
+                                onclick="selectPurpose(this, 'design')" 
+                                class="purpose-btn"
+                                style="padding: 12px; background: rgba(255,255,255,.04); border: 2px solid var(--border); color: var(--muted); border-radius: var(--r-sm); cursor: pointer; font-weight: 600; transition: all .2s;">
+                            🎨 Design
+                        </button>
+                        <button type="button" 
+                                onclick="selectPurpose(this, 'streaming')" 
+                                class="purpose-btn"
+                                style="padding: 12px; background: rgba(255,255,255,.04); border: 2px solid var(--border); color: var(--muted); border-radius: var(--r-sm); cursor: pointer; font-weight: 600; transition: all .2s;">
+                            📺 Streaming
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Budget Slider -->
+                <div class="mb-4">
+                    <label class="form-label-custom">Ngân Sách (VNĐ)</label>
+                    <input type="range" 
+                           id="budgetSlider" 
+                           class="form-range" 
+                           min="5000000" 
+                           max="100000000" 
+                           step="500000" 
+                           value="20000000"
+                           oninput="updateBudgetDisplay(this.value)" 
+                           style="width: 100%; cursor: pointer;" />
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 12px;">
+                        <span class="text-muted">5M</span>
+                        <h3 class="text-accent mb-0" id="budgetDisplay">20M đ</h3>
+                        <span class="text-muted">100M</span>
+                    </div>
+                    
+                    <div id="budgetInsight" style="margin-top: 12px; padding: 12px; background: rgba(0,255,255,.05); border-left: 3px solid var(--accent); border-radius: 4px;">
+                        <small style="color: var(--accent); font-weight: 600;">💡 Phù hợp cho Gaming 1080p High</small>
+                    </div>
+                </div>
+                
+                <!-- Priority -->
+                <div class="mb-4">
+                    <label class="form-label-custom">Ưu Tiên</label>
+                    <select id="priority" class="form-control-dark w-100">
+                        <option value="performance">⚡ Hiệu Năng Cao</option>
+                        <option value="value">💰 Giá Tốt</option>
+                        <option value="balanced" selected>⚖️ Cân Bằng</option>
+                        <option value="compact">📦 Máy Nhỏ Gọn</option>
+                    </select>
+                </div>
+                
+                <!-- Buttons -->
+                <button type="button" 
+                        onclick="generateBuild()" 
+                        class="btn-primary-custom w-100"
+                        style="padding: 14px; font-size: 1rem; border: none; cursor: pointer; font-weight: 700; margin-bottom: 12px;">
+                    ⚡ AI Tạo Build
+                </button>
+                
+                <button type="button" 
+                        onclick="saveBuild()" 
+                        class="btn-secondary-custom w-100"
+                        style="padding: 12px; border: none; cursor: pointer; font-weight: 600;">
+                    💾 Lưu Build
+                </button>
+            </div>
+        </div>
+        
+        <!-- RIGHT: BUILD RESULT & COMPONENTS -->
+        <div class="col-lg-8">
+            <div class="card-dark p-4" style="border-radius: var(--r);">
+                
+                <h4 class="section-title mb-4">✅ Build Của Bạn</h4>
+                
+                <!-- Loading State -->
+                <div id="loadingState" style="text-align: center; padding: 60px 20px;">
+                    <i class="fa-solid fa-wand-magic-sparkles" style="font-size: 3rem; color: var(--accent); margin-bottom: 20px; display: block;"></i>
+                    <p class="text-muted">Nhấn "⚡ AI Tạo Build" để bắt đầu...</p>
+                </div>
+                
+                <!-- Build Components Grid (hidden by default) -->
+                <div id="buildResultContainer" style="display: none;">
+                    
+                    <!-- Components Grid -->
+                    <div id="buildComponents" class="row row-cols-1 row-cols-md-2 g-3 mb-4">
+                        <!-- AJAX load components here -->
+                    </div>
+                    
+                    <!-- Build Summary -->
+                    <div style="background: linear-gradient(135deg, rgba(0,255,255,.1) 0%, rgba(123,94,167,.1) 100%); border: 1px solid var(--border-accent); border-radius: var(--r); padding: 24px; margin-bottom: 20px; position: relative; overflow: hidden;">
+                        
+                        <div style="position: absolute; top: -50%; right: -50%; width: 300px; height: 300px; background: radial-gradient(circle, rgba(0,255,255,.1), transparent); pointer-events: none;"></div>
+                        
+                        <div style="position: relative; z-index: 1;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                                <div>
+                                    <small class="text-muted" style="text-transform: uppercase; display: block; margin-bottom: 8px;">Tổng Giá</small>
+                                    <h2 class="text-accent mb-0" id="totalBuildPrice" style="font-size: 2.5rem; font-weight: 800;">0 đ</h2>
+                                </div>
+                                <div>
+                                    <small class="text-muted" style="text-transform: uppercase; display: block; margin-bottom: 8px;">Ngân Sách</small>
+                                    <h2 id="budgetAmount" style="font-size: 2.5rem; font-weight: 800; color: var(--warning); margin: 0;">20M đ</h2>
+                                </div>
+                            </div>
+                            
+                            <!-- Warning -->
+                            <div id="buildWarning" style="display: none; margin-top: 16px; padding: 12px; background: rgba(255,77,109,.1); border-left: 3px solid var(--danger); border-radius: 4px;">
+                                <small id="warningText" style="color: #ff7a8a; font-weight: 600;"></small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Customization Section -->
+                    <div style="background: var(--card2); border: 1px solid var(--border); border-radius: var(--r); padding: 20px; margin-bottom: 20px;">
+                        <h5 style="margin-bottom: 16px; font-weight: 600;">📝 Tùy Chỉnh Linh Kiện</h5>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label-custom">CPU</label>
+                                <select id="cpuSelect" class="form-control-dark w-100" onchange="updateBuild()">
+                                    <option value="">-- Chọn CPU --</option>
+                                    @foreach(var cpu in cpus)
+                                    {
+                                        <option value="@cpu.Id">@cpu.Name - @cpu.Price.ToString("N0") đ</option>
+                                    }
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label-custom">GPU</label>
+                                <select id="gpuSelect" class="form-control-dark w-100" onchange="updateBuild()">
+                                    <option value="">-- Chọn GPU --</option>
+                                    @foreach(var gpu in gpus)
+                                    {
+                                        <option value="@gpu.Id">@gpu.Name - @gpu.Price.ToString("N0") đ</option>
+                                    }
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label-custom">RAM</label>
+                                <select id="ramSelect" class="form-control-dark w-100" onchange="updateBuild()">
+                                    <option value="">-- Chọn RAM --</option>
+                                    @foreach(var ram in rams)
+                                    {
+                                        <option value="@ram.Id">@ram.Name - @ram.Price.ToString("N0") đ</option>
+                                    }
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Storage</label>
+                                <select id="storageSelect" class="form-control-dark w-100" onchange="updateBuild()">
+                                    <option value="">-- Chọn Storage --</option>
+                                    @foreach(var storage in storages)
+                                    {
+                                        <option value="@storage.Id">@storage.Name - @storage.Price.ToString("N0") đ</option>
+                                    }
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Motherboard</label>
+                                <select id="motherboardSelect" class="form-control-dark w-100" onchange="updateBuild()">
+                                    <option value="">-- Chọn Motherboard --</option>
+                                    @foreach(var motherboard in motherboards)
+                                    {
+                                        <option value="@motherboard.Id">@motherboard.Name - @motherboard.Price.ToString("N0") đ</option>
+                                    }
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label-custom">PSU (Nguồn)</label>
+                                <select id="psuSelect" class="form-control-dark w-100" onchange="updateBuild()">
+                                    <option value="">-- Chọn PSU --</option>
+                                    @foreach(var psu in psus)
+                                    {
+                                        <option value="@psu.Id">@psu.Name - @psu.Price.ToString("N0") đ</option>
+                                    }
+                                </select>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label class="form-label-custom">Case (Vỏ)</label>
+                                <select id="caseSelect" class="form-control-dark w-100" onchange="updateBuild()">
+                                    <option value="">-- Chọn Case --</option>
+                                    @foreach(var case_ in cases)
+                                    {
+                                        <option value="@case_.Id">@case_.Name - @case_.Price.ToString("N0") đ</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Add to Cart -->
+                    <button type="button" 
+                            onclick="addBuildToCart()" 
+                            class="btn-primary-custom w-100"
+                            style="padding: 14px; font-size: 1rem; border: none; cursor: pointer; font-weight: 700;">
+                        🛒 Thêm Toàn Bộ Build Vào Giỏ
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- My Builds Section -->
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card-dark p-4" style="border-radius: var(--r);">
+                    <h4 class="section-title mb-4">📚 Các Build Đã Lưu</h4>
+                    
+                    <div id="myBuildsList" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                        <!-- AJAX load saved builds -->
+                    </div>
+                    
+                    <div id="noBuildsSaved" style="text-align: center; padding: 40px; color: var(--muted);">
+                        <i class="fa-solid fa-inbox" style="font-size: 3rem; margin-bottom: 16px; display: block; opacity: 0.5;"></i>
+                        <p>Bạn chưa lưu build nào. Hãy tạo build đầu tiên!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- JavaScript -->
+<script>
+let currentPurpose = 'gaming';
+let currentBuild = null;
+
+function selectPurpose(btn, purpose) {
+    currentPurpose = purpose;
+    
+    document.querySelectorAll('.purpose-btn').forEach(b => {
+        b.style.background = 'rgba(255,255,255,.04)';
+        b.style.borderColor = 'var(--border)';
+        b.style.color = 'var(--muted)';
+    });
+    
+    btn.style.background = 'rgba(0,255,255,.1)';
+    btn.style.borderColor = 'var(--accent)';
+    btn.style.color = 'var(--text)';
+    
+    updateBudgetDisplay(document.getElementById('budgetSlider').value);
+}
+
+function updateBudgetDisplay(value) {
+    const budget = parseInt(value);
+    const displayValue = (budget / 1000000).toFixed(1) + 'M đ';
+    document.getElementById('budgetDisplay').textContent = displayValue;
+    document.getElementById('budgetAmount').textContent = displayValue;
+    
+    let insight = '';
+    if (budget <= 10000000) insight = '💡 Tốt cho Office/Casual Gaming';
+    else if (budget <= 20000000) insight = '💡 Ideal cho Gaming 1080p High';
+    else if (budget <= 40000000) insight = '💡 Great cho 1440p Gaming';
+    else insight = '💡 Professional 4K Gaming Ready';
+    
+    document.getElementById('budgetInsight').innerHTML = `<small style="color: var(--accent); font-weight: 600;">${insight}</small>`;
+}
+
+async function generateBuild() {
+    try {
+        const purpose = currentPurpose;
+        const budget = parseInt(document.getElementById('budgetSlider').value);
+        const priority = document.getElementById('priority').value;
+        
+        document.getElementById('loadingState').style.display = 'block';
+        document.getElementById('buildResultContainer').style.display = 'none';
+        
+        const response = await fetch('/Build/Recommend', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ purpose, budget, priority })
+        });
+        
+        if (!response.ok) throw new Error('Build generation failed');
+        
+        const result = await response.json();
+        
+        if (!result.success) throw new Error(result.error);
+        
+        currentBuild = result.data;
+        
+        renderBuildComponents(result.data);
+        
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('buildResultContainer').style.display = 'block';
+        
+        document.getElementById('totalBuildPrice').textContent = result.data.totalPrice.toLocaleString() + ' đ';
+        
+        if (result.data.warning) {
+            document.getElementById('buildWarning').style.display = 'block';
+            document.getElementById('warningText').textContent = result.data.warning;
+        } else {
+            document.getElementById('buildWarning').style.display = 'none';
+        }
+        
+        showToast('✓ Build được tạo thành công!', 'success');
+        
+    } catch (error) {
+        console.error(error);
+        showToast('❌ Lỗi tạo build: ' + error.message, 'error');
+        document.getElementById('loadingState').style.display = 'block';
+        document.getElementById('buildResultContainer').style.display = 'none';
+    }
+}
+
+function renderBuildComponents(build) {
+    const components = [
+        { name: 'CPU', item: build?.cpu, icon: '⚡' },
+        { name: 'GPU', item: build?.gpu, icon: '🎮' },
+        { name: 'RAM', item: build?.ram, icon: '🧠' },
+        { name: 'Storage', item: build?.storage, icon: '💾' },
+        { name: 'Motherboard', item: build?.motherboard, icon: '🔌' },
+        { name: 'PSU', item: build?.psu, icon: '⚡' },
+        { name: 'Case', item: build?.case_, icon: '📦' }
+    ];
+    
+    let html = '';
+    
+    components.forEach(comp => {
+        if (comp.item && comp.item.id && comp.item.id > 0) {
+            const price = Number(comp.item.price) || 0;
+            const name = comp.item.name || 'N/A';
+            const priceText = price > 0 ? price.toLocaleString() + ' đ' : 'Liên hệ';
+            
+            html += `
+            <div class="col">
+                <div style="background: var(--card2); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 16px; transition: all .2s;">
+                    <div style="display: flex; gap: 12px; margin-bottom: 12px;">
+                        <div style="width: 60px; height: 60px; background: var(--card); border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <span style="font-size: 1.5rem;">${comp.icon}</span>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <small class="text-muted" style="display: block; margin-bottom: 4px;">${comp.name}</small>
+                            <div style="font-weight: 600; font-size: .95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text);">
+                                ${name}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-accent" style="font-weight: 700; font-size: .9rem;">
+                        ${priceText}
+                    </div>
+                </div>
+            </div>
+            `;
+        }
+    });
+    
+    document.getElementById('buildComponents').innerHTML = html || '<div class="col-12" style="text-align: center; padding: 40px; color: var(--muted);">Nhấn AI Tạo Build để xem các linh kiện</div>';
+}
+
+function updateBuild() {
+    if (!currentBuild) return;
+    
+    // Update component selections from dropdowns if they have values
+    const componentMap = {
+        'cpuSelect': 'cpu',
+        'gpuSelect': 'gpu',
+        'ramSelect': 'ram',
+        'storageSelect': 'storage',
+        'motherboardSelect': 'motherboard',
+        'psuSelect': 'psu',
+        'caseSelect': 'case_'
+    };
+    
+    // Recalculate total price
+    let newTotal = 0;
+    const allComponents = [
+        { name: 'CPU', item: currentBuild.cpu },
+        { name: 'GPU', item: currentBuild.gpu },
+        { name: 'RAM', item: currentBuild.ram },
+        { name: 'Storage', item: currentBuild.storage },
+        { name: 'Motherboard', item: currentBuild.motherboard },
+        { name: 'PSU', item: currentBuild.psu },
+        { name: 'Case', item: currentBuild.case_ }
+    ];
+    
+    allComponents.forEach(comp => {
+        if (comp.item && comp.item.price) {
+            newTotal += Number(comp.item.price) || 0;
+        }
+    });
+    
+    currentBuild.totalPrice = newTotal;
+    
+    renderBuildComponents(currentBuild);
+    document.getElementById('totalBuildPrice').textContent = newTotal.toLocaleString() + ' đ';
+}
+
+function addBuildToCart() {
+    if (!currentBuild) {
+        showToast('❌ Vui lòng tạo build trước!', 'error');
+        return;
+    }
+    
+    showToast('✓ Đã thêm build vào giỏ!', 'success');
+}
+
+function saveBuild() {
+    if (!currentBuild) {
+        showToast('❌ Vui lòng tạo build trước!', 'error');
+        return;
+    }
+    
+    const buildName = prompt('Đặt tên cho build này:');
+    if (!buildName) return;
+    
+    showToast('💾 Build đã được lưu!', 'success');
+}
+
+function showToast(msg, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = type === 'error' ? 'alert-err' : 'alert-ok';
+    toast.innerHTML = msg;
+    toast.style.cssText = 'position: fixed; top: 120px; right: 20px; z-index: 10000; min-width: 300px; animation: slideIn .3s ease;';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const firstBtn = document.querySelector('.purpose-btn');
+    if (firstBtn) selectPurpose(firstBtn, 'gaming');
+});
+</script>
+
+<style>
+@@keyframes slideIn {
+    from { transform: translateX(400px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+</style>

@@ -1,0 +1,131 @@
+@{ ViewData["Title"] = "Báo cáo Bán hàng"; }
+<style>
+.form-group{margin-bottom:15px;}
+.form-group label{color:var(--text);font-weight:600;margin-bottom:6px;display:block;font-size:.9rem;}
+.form-control{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:var(--r-sm);transition:all .2s;}
+.form-control:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px rgba(0,255,255,.08);}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#00b8d4);color:#05080f;padding:10px 24px;border:none;border-radius:var(--r-sm);font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,255,255,.3);}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;margin-bottom:12px;}
+.stat-label{color:var(--muted);font-size:.85rem;font-weight:600;text-transform:uppercase;margin-bottom:6px;letter-spacing:.5px;}
+.stat-value{font-size:1.5rem;font-weight:800;color:var(--accent);font-family:var(--font-head);}
+.table-dark-custom{width:100%;border-collapse:collapse;font-size:.86rem;color:var(--text);background:var(--card);border-radius:var(--r);overflow:hidden;border:1px solid var(--border);}
+.table-dark-custom thead{background:var(--card2);}
+.table-dark-custom th{padding:14px;text-align:left;font-weight:700;color:var(--accent);text-transform:uppercase;font-size:.75rem;}
+.table-dark-custom td{padding:14px;border-bottom:1px solid var(--border);}
+</style>
+<div class="page-header animate-in" style="z-index:2;">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h1><i class="fa-solid fa-chart-bar me-2" style="color:#fbbf24;"></i>Báo cáo Bán hàng</h1>
+        <p style="color:var(--muted);font-size:.88rem;margin-top:4px;">Phân tích doanh số bán hàng</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container py-4" style="position:relative;z-index:2;">
+  <div class="row g-4 mb-4">
+    <div class="col-lg-4">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;">
+        <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:16px;"><i class="fa-solid fa-filter me-2"></i>Lọc theo ngày</h5>
+        <form method="get" action="/Manager/SalesReport">
+          <div class="form-group">
+            <label>Từ ngày</label>
+            <input type="date" name="fromDate" class="form-control" value="@ViewBag.FromDate?.ToString("yyyy-MM-dd")">
+          </div>
+          <div class="form-group">
+            <label>Đến ngày</label>
+            <input type="date" name="toDate" class="form-control" value="@ViewBag.ToDate?.ToString("yyyy-MM-dd")">
+          </div>
+          <button type="submit" class="btn-primary w-100">Lọc dữ liệu</button>
+          <a href="/Manager/SalesReport" class="btn-primary w-100" style="margin-top:8px;text-align:center;text-decoration:none;">Xóa lọc</a>
+        </form>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      @if(ViewBag.ReportData != null){
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
+          <div class="stat-card">
+            <div class="stat-label"><i class="fa-solid fa-bag-shopping me-1"></i>Tổng đơn hàng</div>
+            <div class="stat-value">@ViewBag.ReportData.TotalOrders</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><i class="fa-solid fa-sack-dollar me-1"></i>Doanh thu</div>
+            <div class="stat-value">@(((decimal)ViewBag.ReportData.TotalRevenue).ToString("N0"))₫</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label"><i class="fa-solid fa-chart-line me-1"></i>Trung bình/đơn</div>
+            <div class="stat-value">@(((decimal)ViewBag.ReportData.AverageOrderValue).ToString("N0"))₫</div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+  <div class="row g-4">
+    @if(ViewBag.ReportData?.TopProducts != null && ViewBag.ReportData.TopProducts.Count > 0){
+      <div class="col-lg-6">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);background:var(--card2);">
+            <h5 style="font-family:var(--font-head);font-weight:700;margin:0;"><i class="fa-solid fa-fire me-2" style="color:#fbbf24;"></i>Top Sản phẩm bán chạy</h5>
+          </div>
+          <table class="table-dark-custom">
+            <thead>
+              <tr>
+                <th>Sản phẩm</th>
+                <th style="text-align:right;">Số lượng</th>
+              </tr>
+            </thead>
+            <tbody>
+              @{
+                var count = 0;
+                foreach(var tp in ViewBag.ReportData.TopProducts){
+                  count++;
+                  <tr>
+                    <td style="color:var(--accent);font-weight:600;">@count. @tp.ProductId</td>
+                    <td style="color:var(--success);font-weight:700;text-align:right;">@tp.Quantity</td>
+                  </tr>
+                  if(count >= 10) break;
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+    @if(ViewBag.Orders != null){
+      <div class="col-lg-@(ViewBag.ReportData?.TopProducts != null && ViewBag.ReportData.TopProducts.Count > 0 ? "6" : "12")">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;">
+          <div style="padding:16px 20px;border-bottom:1px solid var(--border);background:var(--card2);">
+            <h5 style="font-family:var(--font-head);font-weight:700;margin:0;"><i class="fa-solid fa-list me-2"></i>Các đơn hàng được chọn</h5>
+          </div>
+          <table class="table-dark-custom">
+            <thead>
+              <tr>
+                <th>Mã đơn</th>
+                <th>Khách hàng</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              @{
+                var orderCount = 0;
+                foreach(var o in (IEnumerable<TechStore.Models.Order>)ViewBag.Orders){
+                  orderCount++;
+                  <tr>
+                    <td style="color:var(--accent);font-weight:700;">#TS@o.Id.ToString("D4")</td>
+                    <td>@o.CustomerName</td>
+                    <td style="color:var(--success);font-weight:700;">@o.Total.ToString("N0")₫</td>
+                    <td><span style="background:rgba(52,211,153,.1);color:var(--success);padding:3px 8px;border-radius:99px;font-size:.75rem;font-weight:700;">@o.Status</span></td>
+                  </tr>
+                  if(orderCount >= 15) break;
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  </div>
+</div>

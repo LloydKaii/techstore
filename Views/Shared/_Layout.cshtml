@@ -224,8 +224,11 @@
         <li><a class="nl @(ViewContext.RouteData.Values["controller"]?.ToString()=="Product"?"active":"")" href="/Product"><i class="fa-solid fa-laptop"></i>Sản phẩm</a></li>
         <li><a class="nl @(ViewContext.RouteData.Values["controller"]?.ToString()=="Build"?"active":"")" href="/Build"><i class="fa-solid fa-screwdriver-wrench"></i>Build PC</a></li>
         <li><a class="nl @(ViewContext.RouteData.Values["controller"]?.ToString()=="Category"?"active":"")" href="/Category"><i class="fa-solid fa-tags"></i>Danh mục</a></li>
-        @if(User.IsInRole("Admin")||User.IsInRole("Manager")){
-          <li><a class="nl @(ViewContext.RouteData.Values["controller"]?.ToString()=="Admin"?"active":"")" href="/Admin/Dashboard"><i class="fa-solid fa-gauge"></i>Admin</a></li>
+        @if(User.IsInRole("Admin")){
+          <li><a class="nl @(ViewContext.RouteData.Values["controller"]?.ToString()=="Admin"?"active":"")" href="/Admin/Dashboard"><i class="fa-solid fa-shield-halved" style="color:var(--accent);"></i>Admin Panel</a></li>
+        }
+        @if(User.IsInRole("Manager")){
+          <li><a class="nl @(ViewContext.RouteData.Values["controller"]?.ToString()=="Manager"?"active":"")" href="/Manager/Dashboard"><i class="fa-solid fa-chart-pie" style="color:#fbbf24;"></i>Manager</a></li>
         }
       </ul>
 
@@ -247,10 +250,18 @@
               <li><a class="dd-item" href="/Account/Profile"><i class="fa-solid fa-user text-accent"></i>Hồ sơ</a></li>
               <li><a class="dd-item" href="/Order/MyOrders"><i class="fa-solid fa-bag-shopping" style="color:var(--success);"></i>Đơn hàng của tôi</a></li>
               <li><a class="dd-item" href="/Wishlist"><i class="fa-solid fa-heart" style="color:#ff7a8a;"></i>Yêu thích</a></li>
-              @if(User.IsInRole("Admin")||User.IsInRole("Manager")){
+              @if(User.IsInRole("Admin")){
                 <li><div class="dd-div"></div></li>
-                <li><a class="dd-item" href="/Admin/Dashboard"><i class="fa-solid fa-gauge text-accent"></i>Dashboard</a></li>
-                <li><a class="dd-item" href="/Order/Manage"><i class="fa-solid fa-list-check" style="color:var(--warning);"></i>Quản lý đơn hàng</a></li>
+                <li><a class="dd-item" href="/Admin/Dashboard"><i class="fa-solid fa-shield-halved" style="color:var(--accent);"></i>Admin Dashboard</a></li>
+                <li><a class="dd-item" href="/Admin/Users"><i class="fa-solid fa-users" style="color:#c4aff0;"></i>Quản lý Users</a></li>
+                <li><a class="dd-item" href="/Admin/Vouchers"><i class="fa-solid fa-ticket" style="color:var(--warning);"></i>Mã giảm giá</a></li>
+              }
+              @if(User.IsInRole("Manager")){
+                <li><div class="dd-div"></div></li>
+                <li><a class="dd-item" href="/Manager/Dashboard"><i class="fa-solid fa-chart-pie" style="color:#fbbf24;"></i>Manager Dashboard</a></li>
+                <li><a class="dd-item" href="/Manager/Products"><i class="fa-solid fa-list" style="color:var(--accent);"></i>Quản lý sản phẩm</a></li>
+                <li><a class="dd-item" href="/Manager/Orders"><i class="fa-solid fa-bag-shopping" style="color:var(--success);"></i>Quản lý đơn hàng</a></li>
+                <li><a class="dd-item" href="/Manager/SalesReport"><i class="fa-solid fa-chart-bar" style="color:#fbbf24;"></i>Báo cáo bán hàng</a></li>
               }
               <li><div class="dd-div"></div></li>
               <li>

@@ -2,53 +2,126 @@
     ViewData["Title"] = "Build PC";
 }
 
+<style>
+    .component-slot {
+        min-height: 120px;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%) !important;
+        border: 2px solid #0f3460 !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    
+    .component-slot:hover {
+        border-color: #00d4ff !important;
+        background: linear-gradient(135deg, #0f3460 0%, #16213e 100%) !important;
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+    }
+
+    .component-slot h5 {
+        color: #00d4ff;
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .component-slot .selected {
+        width: 100%;
+        text-align: center;
+        color: white;
+    }
+
+    .component-slot .selected img {
+        max-width: 100%;
+        max-height: 100px;
+    }
+    
+    .part {
+        display: flex !important;
+        gap: 12px;
+        align-items: center;
+        background: #1a1a2e;
+        border: 1px solid #0f3460 !important;
+        color: white;
+        transition: all 0.2s;
+    }
+
+    .part:hover {
+        background: #16213e;
+        border-color: #00d4ff !important;
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+    }
+
+    .part>div {
+        flex-grow: 1;
+    }
+
+    #totalPrice {
+        color: #00d4ff;
+        font-weight: 700;
+        font-size: 2rem;
+    }
+</style>
+
 <div class="container mt-5">
-    <h1>Build PC Của Bạn</h1>
+    <h1 style="color: #00d4ff;">🖥️ BUILD PC CỦA BẠN</h1>
+    <p class="text-muted">Chọn linh kiện hoặc để AI gợi ý cho bạn</p>
+    
     <div class="row">
         <!-- Slots -->
         <div class="col-md-8">
             <div class="row g-3">
                 <div class="col-md-4">
-                    <div class="component-slot p-4 border rounded cursor-pointer" data-type="cpu">
+                    <div class="component-slot p-4 border rounded" data-type="cpu">
                         <h5 id="cpuSlot">Chọn CPU</h5>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="component-slot p-4 border rounded cursor-pointer" data-type="ram">
+                    <div class="component-slot p-4 border rounded" data-type="ram">
                         <h5 id="ramSlot">Chọn RAM</h5>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="component-slot p-4 border rounded cursor-pointer" data-type="vga">
+                    <div class="component-slot p-4 border rounded" data-type="gpu">
                         <h5 id="vgaSlot">Chọn GPU</h5>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="component-slot p-4 border rounded cursor-pointer" data-type="mainboard">
+                    <div class="component-slot p-4 border rounded" data-type="mainboard">
                         <h5 id="mainboardSlot">Chọn Mainboard</h5>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="component-slot p-4 border rounded cursor-pointer" data-type="psu">
+                    <div class="component-slot p-4 border rounded" data-type="psu">
                         <h5 id="psuSlot">Chọn PSU</h5>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="component-slot p-4 border rounded cursor-pointer" data-type="ssd">
-                        <h5 id="ssdSlot">Chọn SSD</h5>
+                    <div class="component-slot p-4 border rounded" data-type="storage">
+                        <h5 id="ssdSlot">Chọn Storage</h5>
                     </div>
                 </div>
             </div>
-            <div class="mt-4 text-center">
+            <div class="mt-4 text-center p-4"
+                 style="background: #1a1a2e; border-radius: 8px; border: 1px solid #0f3460;">
                 <h2 id="totalPrice">0 ₫</h2>
-                <button onclick="aiSuggest()" class="btn btn-primary me-2">AI Gợi ý</button>
-                <button onclick="saveBuild()" class="btn btn-success">Lưu Build</button>
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="aiSuggest()" class="btn btn-primary">🤖 AI Gợi ý</button>
+                    <button onclick="saveBuild()" class="btn btn-success">💾 Lưu Build</button>
+                    <button onclick="clearBuild()" class="btn btn-secondary">🔄 Xóa</button>
+                </div>
             </div>
         </div>
+        
         <!-- Parts list -->
         <div class="col-md-4">
-            <div id="partsGrid" class="list-group">
-                Click slot to load
+            <div class="p-4"
+                 style="background: #1a1a2e; border: 1px solid #0f3460; border-radius: 8px; max-height: 600px; overflow-y: auto;">
+                <h5 style="color: #00d4ff; margin-bottom: 16px;">📋 Linh kiện khả dụng</h5>
+                <div id="partsGrid" class="list-group">
+                    <div class="alert alert-info text-white">👆 Nhấp vào một slot để chọn linh kiện</div>
+                </div>
             </div>
         </div>
     </div>

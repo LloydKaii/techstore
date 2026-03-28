@@ -1,0 +1,80 @@
+@model IEnumerable<TechStore.Models.Category>
+@{ ViewData["Title"] = "Quản lý Danh mục"; }
+<style>
+.form-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:24px;}
+.form-group{margin-bottom:20px;}
+.form-group label{color:var(--text);font-weight:600;margin-bottom:8px;display:block;font-size:.9rem;}
+.form-control{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:var(--r-sm);transition:all .2s;}
+.form-control:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px rgba(0,255,255,.08);}
+.btn-primary{background:linear-gradient(135deg,var(--accent),#00b8d4);color:#05080f;padding:10px 24px;border:none;border-radius:var(--r-sm);font-weight:700;cursor:pointer;transition:all .2s;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,255,255,.3);}
+.category-item{background:var(--card2);border:1px solid var(--border);border-radius:var(--r-sm);padding:16px;margin-bottom:10px;transition:all .2s;}
+.category-item:hover{border-color:var(--border-accent);box-shadow:0 4px 12px rgba(0,0,0,.3);}
+.btn-sm{padding:6px 12px;font-size:.85rem;text-decoration:none;margin:4px;display:inline-block;border-radius:var(--r-sm);}
+.btn-edit{background:rgba(0,255,255,.1);color:var(--accent);border:1px solid var(--border);}
+.btn-edit:hover{background:rgba(0,255,255,.2);}
+.btn-delete{background:rgba(255,77,109,.1);color:#ff7a8a;border:1px solid var(--border);}
+.btn-delete:hover{background:rgba(255,77,109,.2);}
+</style>
+<div class="page-header animate-in" style="z-index:2;">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h1><i class="fa-solid fa-tags me-2" style="color:var(--accent2);"></i>Quản lý Danh mục</h1>
+        <p style="color:var(--muted);font-size:.88rem;margin-top:4px;">@Model.Count() danh mục</p>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="container py-4" style="position:relative;z-index:2;">
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="form-card">
+        <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:20px;"><i class="fa-solid fa-plus me-2"></i>Thêm Danh mục</h5>
+        <form action="/Manager/AddCategory" method="post">
+          <div class="form-group">
+            <label>Tên danh mục</label>
+            <input type="text" name="name" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>Mô tả (tùy chọn)</label>
+            <textarea name="description" class="form-control" rows="3"></textarea>
+          </div>
+          <button type="submit" class="btn-primary w-100">Thêm Danh mục</button>
+        </form>
+      </div>
+    </div>
+    <div class="col-lg-8">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:20px;">
+        <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:16px;"><i class="fa-solid fa-list me-2"></i>Danh sách danh mục</h5>
+        @if(Model.Any()){
+          <div>
+            @foreach(var cat in Model){
+              <div class="category-item">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div style="flex:1;">
+                    <div style="color:var(--text);font-weight:700;font-size:1.05rem;margin-bottom:4px;">@cat.Name</div>
+                    @if(!string.IsNullOrEmpty(cat.Description)){
+                      <div style="color:var(--muted);font-size:.85rem;">@cat.Description</div>
+                    }
+                  </div>
+                  <div style="text-align:right;flex-shrink:0;">
+                    <a href="#" class="btn-sm btn-edit" onclick="alert('Chỉnh sửa chức năng sẽ sớm có sẵn');return false;">Sửa</a>
+                    <form action="/Manager/DeleteCategory/@cat.Id" method="post" style="display:inline;" onsubmit="return confirm('Bạn chắc chắn muốn xóa?');">
+                      <button type="submit" class="btn-sm btn-delete">Xóa</button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        } else {
+          <div style="padding:40px;text-align:center;color:var(--muted);">
+            <i class="fa-solid fa-inbox" style="font-size:3rem;margin-bottom:15px;display:block;opacity:0.5;"></i>
+            <p>Chưa có danh mục nào</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

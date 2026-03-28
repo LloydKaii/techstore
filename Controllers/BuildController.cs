@@ -4,137 +4,252 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TechStore.Models;
 using TechStore.Repositories;
+using TechStore.Services;
 
 namespace TechStore.Controllers
 {
+    [AllowAnonymous]
     public class BuildController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly IProductRepository _productRepo;
+        private readonly ICategoryRepository _categoryRepo;
+        private readonly PCBuildService _buildService;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ILogger<BuildController> _logger;
 
-        public BuildController(ApplicationDbContext context, IProductRepository productRepo, UserManager<ApplicationUser> userManager)
+        public BuildController(
+            ApplicationDbContext context,
+            IProductRepository productRepo,
+            ICategoryRepository categoryRepo,
+            PCBuildService buildService,
+            UserManager<ApplicationUser> userManager,
+            ILogger<BuildController> logger)
         {
             _context = context;
             _productRepo = productRepo;
+            _categoryRepo = categoryRepo;
+            _buildService = buildService;
             _userManager = userManager;
+            _logger = logger;
         }
 
-        [AllowAnonymous]
+        // GET: /Build
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
-            var allLinhKienQuery = _context.Products
-                            .Where(p => p.Category.Name == "Linh kiện");
-
-            var cpuList = await allLinhKienQuery.Where(p => p.Name.Contains("CPU")).OrderBy(p => p.Price).Take(10).ToListAsync();
-            var ramList = await allLinhKienQuery.Where(p => p.Name.Contains("RAM")).OrderBy(p => p.Price).Take(10).ToListAsync();
-            var vgaList = await allLinhKienQuery.Where(p => p.Name.Contains("VGA") || p.Name.Contains("RTX") || p.Name.Contains("RX")).OrderBy(p => p.Price).Take(10).ToListAsync();
-            var mainList = await allLinhKienQuery.Where(p => p.Name.Contains("Main") || p.Name.Contains("Mainboard")).OrderBy(p => p.Price).Take(10).ToListAsync();
-            var psuList = await allLinhKienQuery.Where(p => p.Name.Contains("PSU")).OrderBy(p => p.Price).Take(10).ToListAsync();
-            var ssdList = await allLinhKienQuery.Where(p => p.Name.Contains("SSD")).OrderBy(p => p.Price).Take(10).ToListAsync();
-
-            ViewBag.Components = new Dictionary<string, object>
+            try
             {
-                ["CPU"] = cpuList,
-                ["RAM"] = ramList,
-                ["VGA"] = vgaList,
-                ["MAINBOARD"] = mainList,
-                ["PSU"] = psuList,
-                ["SSD"] = ssdList
-            };
+                var categories = await _categoryRepo.GetAllAsync();
+                var cpus = await _productRepo.GetByCategoryAsync("CPU") ?? new List<Product>();
+                var gpus = await _productRepo.GetByCategoryAsync("GPU") ?? new List<Product>();
+                var rams = await _productRepo.GetByCategoryAsync("RAM") ?? new List<Product>();
+                var storages = await _productRepo.GetByCategoryAsync("Storage") ?? new List<Product>();
+                var motherboards = await _productRepo.GetByCategoryAsync("Motherboard") ?? new List<Product>();
+                var psus = await _productRepo.GetByCategoryAsync("PSU") ?? new List<Product>();
+                var cases = await _productRepo.GetByCategoryAsync("Case") ?? new List<Product>();
 
-            if (User.Identity.IsAuthenticated)
-                ViewBag.Builds = await GetUserBuildsAsync();
+                ViewBag.CPUs = cpus;
+                ViewBag.GPUs = gpus;
+                ViewBag.RAMs = rams;
+                ViewBag.Storages = storages;
+                ViewBag.Motherboards = motherboards;
+                ViewBag.PSUs = psus;
+                ViewBag.Cases = cases;
+                ViewBag.Categories = categories;
 
-            return View();
+                if (User.Identity.IsAuthenticated)
+                    ViewBag.Builds = await GetUserBuildsAsync();
+
+                return View();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading Build page");
+                TempData["Error"] = "Lỗi tải trang Build PC. Vui lòng thử lại!";
+                return RedirectToAction("Index", "Home");
+            }
         }
 
-        [Authorize, HttpPost]
-        public async Task<IActionResult> Save()
+        // POST: /Build/Recommend - AI Generate Build
+        [HttpPost]
+        [Produces("application/json")]
+        public async Task<IActionResult> Recommend([FromBody] PCBuildService.PCBuildRequest request)
         {
-            var user = await _userManager.GetUserAsync(User);
-            var build = new PCBuild
+            try
             {
-                UserId = user.Id,
-                Name = !string.IsNullOrEmpty(Request.Form["name"]) ? Request.Form["name"].ToString() : "My PC Build",
-                CPUId = int.TryParse(Request.Form["CPUId"], out int cpuId) ? cpuId : null,
-                RAMId = int.TryParse(Request.Form["RAMId"], out int ramId) ? ramId : null,
-                VGAId = int.TryParse(Request.Form["VGAId"], out int vgaId) ? vgaId : null,
-                MainboardId = int.TryParse(Request.Form["MainboardId"], out int mainId) ? mainId : null,
-                PSUId = int.TryParse(Request.Form["PSUId"], out int psuId) ? psuId : null,
-                CaseId = int.TryParse(Request.Form["CaseId"], out int caseId) ? caseId : null,
-                Notes = Request.Form["notes"].ToString(),
-                CreatedAt = DateTime.Now,
-                TotalPrice = 0
-            };
+                if (request == null)
+                    return BadRequest(new { error = "Dữ liệu không hợp lệ" });
+
+                var result = await _buildService.RecommendBuild(request);
+
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        cpu = CreateComponentResponse(result.CPU),
+                        gpu = CreateComponentResponse(result.GPU),
+                        ram = CreateComponentResponse(result.RAM),
+                        storage = CreateComponentResponse(result.Storage),
+                        motherboard = CreateComponentResponse(result.Motherboard),
+                        psu = CreateComponentResponse(result.PSU),
+                        case_ = CreateComponentResponse(result.Case),
+                        totalPrice = result.TotalPrice,
+                        warning = result.Warning
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error recommending build");
+                return BadRequest(new { error = "Lỗi tạo build: " + ex.Message });
+            }
+        }
+
+        // GET: /Build/MyBuilds
+        [Authorize(Roles = "Customer")]
+        public async Task<IActionResult> MyBuilds()
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null) return Unauthorized();
+
+                var builds = await _context.PCBuilds
+                    .Include(b => b.CPU)
+                    .Include(b => b.RAM)
+                    .Include(b => b.VGA)
+                    .Include(b => b.Mainboard)
+                    .Include(b => b.PSU)
+                    .Include(b => b.Case)
+                    .Where(b => b.UserId == user.Id)
+                    .OrderByDescending(b => b.CreatedAt)
+                    .ToListAsync();
+
+                return View(builds);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error loading MyBuilds");
+                return RedirectToAction("Index");
+            }
+        }
+
+        // POST: /Build/Save - Lưu Build
+        [Authorize(Roles = "Customer"), HttpPost]
+        public async Task<IActionResult> Save([FromBody] dynamic buildData)
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                if (user == null) return Unauthorized();
+
+                var buildName = buildData?.name ?? "My Build";
+                var components = buildData?.components as dynamic;
+
+                var build = new PCBuild
+                {
+                    UserId = user.Id,
+                    Name = buildName,
+                    CreatedAt = DateTime.Now,
+                    TotalPrice = 0
+                };
+
+                if (components != null)
+                {
+                    int cpuId, gpuId, ramId, motherId, psuId, caseId;
+                    
+                    if (int.TryParse(components.cpuId?.ToString() ?? "", out cpuId))
+                        build.CPUId = cpuId;
+                    if (int.TryParse(components.gpuId?.ToString() ?? "", out gpuId))
+                        build.VGAId = gpuId;
+                    if (int.TryParse(components.ramId?.ToString() ?? "", out ramId))
+                        build.RAMId = ramId;
+                    if (int.TryParse(components.motherId?.ToString() ?? "", out motherId))
+                        build.MainboardId = motherId;
+                    if (int.TryParse(components.psuId?.ToString() ?? "", out psuId))
+                        build.PSUId = psuId;
+                    if (int.TryParse(components.caseId?.ToString() ?? "", out caseId))
+                        build.CaseId = caseId;
+                }
+
+                build.TotalPrice = await CalculateBuildPrice(build);
+
+                _context.PCBuilds.Add(build);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { success = true, message = "Build saved successfully!" });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error saving build");
+                return BadRequest(new { error = "Lỗi lưu build: " + ex.Message });
+            }
+        }
+
+        private async Task<decimal> CalculateBuildPrice(PCBuild build)
+        {
+            decimal total = 0;
 
             if (build.CPUId.HasValue)
             {
                 var cpu = await _context.Products.FindAsync(build.CPUId.Value);
-                if (cpu != null) build.TotalPrice += cpu.Price;
+                if (cpu != null) total += cpu.Price;
             }
             if (build.RAMId.HasValue)
             {
                 var ram = await _context.Products.FindAsync(build.RAMId.Value);
-                if (ram != null) build.TotalPrice += ram.Price;
+                if (ram != null) total += ram.Price;
             }
             if (build.VGAId.HasValue)
             {
                 var vga = await _context.Products.FindAsync(build.VGAId.Value);
-                if (vga != null) build.TotalPrice += vga.Price;
+                if (vga != null) total += vga.Price;
             }
             if (build.MainboardId.HasValue)
             {
-                var main = await _context.Products.FindAsync(build.MainboardId.Value);
-                if (main != null) build.TotalPrice += main.Price;
+                var mb = await _context.Products.FindAsync(build.MainboardId.Value);
+                if (mb != null) total += mb.Price;
             }
             if (build.PSUId.HasValue)
             {
                 var psu = await _context.Products.FindAsync(build.PSUId.Value);
-                if (psu != null) build.TotalPrice += psu.Price;
+                if (psu != null) total += psu.Price;
             }
             if (build.CaseId.HasValue)
             {
                 var @case = await _context.Products.FindAsync(build.CaseId.Value);
-                if (@case != null) build.TotalPrice += @case.Price;
+                if (@case != null) total += @case.Price;
             }
 
-            _context.PCBuilds.Add(build);
-            await _context.SaveChangesAsync();
-
-            TempData["Success"] = "Đã lưu build thành công!";
-            return RedirectToAction(nameof(MyBuilds));
+            return total;
         }
 
-        [Authorize]
-        public async Task<IActionResult> MyBuilds()
+        private object CreateComponentResponse(Product product)
         {
-            var user = await _userManager.GetUserAsync(User);
-            var builds = await _context.PCBuilds
-                .Include(b => b.CPU)
-                .Include(b => b.RAM)
-                .Include(b => b.VGA)
-                .Include(b => b.Mainboard)
-                .Include(b => b.PSU)
-                .Include(b => b.Case)
-                .Where(b => b.UserId == user.Id)
-                .OrderByDescending(b => b.CreatedAt)
-                .ToListAsync();
-            return View(builds);
-        }
+            if (product == null || product.Id == 0)
+                return new { id = 0, name = "N/A", price = 0, image = "" };
 
-        [AllowAnonymous]
-        public IActionResult AutoBuild(decimal budget)
-        {
-            ViewBag.Budget = budget;
-            return PartialView("_AutoBuild");
+            return new
+            {
+                id = product.Id,
+                name = product.Name,
+                price = product.Price,
+                image = product.ImageUrl ?? ""
+            };
         }
 
         private async Task<List<PCBuild>> GetUserBuildsAsync()
         {
             var user = await _userManager.GetUserAsync(User);
             if (user == null) return new List<PCBuild>();
-            return await _context.PCBuilds.Where(b => b.UserId == user.Id).OrderByDescending(b => b.CreatedAt).Take(5).ToListAsync();
+
+            return await _context.PCBuilds
+                .Where(b => b.UserId == user.Id)
+                .OrderByDescending(b => b.CreatedAt)
+                .Take(5)
+                .ToListAsync();
         }
     }
 }

@@ -1,81 +1,77 @@
 @model IEnumerable<TechStore.Models.Category>
-@await Html.PartialAsync("~/Views/Category/Index-Original.cshtml")
+
 @{
-  ViewData["Title"] = "Danh mục";
-  var isAdmin = ViewBag.IsAdmin as bool? ?? User.IsInRole("Admin") || User.IsInRole("Manager");
+    ViewData["Title"] = "Danh Mục";
+    var isAdmin = User.IsInRole("Admin") || User.IsInRole("Manager");
 }
 
+<!-- PAGE HEADER -->
 <div class="page-header">
-  <div class="container">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-      <div>
-        <h1><i class="fa-solid fa-tags me-2 text-accent"></i>@(isAdmin ? "Quản lý danh mục" : "Danh mục sản phẩm")</h1>
-        <p style="color:#8899aa;margin:0;font-size:.9rem;">@Model.Count() danh mục @(isAdmin ? "" : "có sẵn")</p>
-      </div>
-      @if (isAdmin)
-      {
-        <a href="/Category/Add" class="btn-primary-custom">
-          <i class="fa-solid fa-plus me-2"></i>Thêm danh mục
-        </a>
-      }
+    <div class="container">
+        <h1>📂 Danh Mục Sản Phẩm</h1>
+        <p class="text-muted">Khám phá các loại linh kiện PC của chúng tôi</p>
     </div>
-  </div>
 </div>
 
-<div class="container py-4">
-  <div class="row g-4">
-    @foreach (var item in Model)
-    {
-      <div class="col-lg-4 col-md-6">
-        <div class="card-hover h-100" data-aos="fade-up" data-aos-delay="100">
-          <div class="position-relative overflow-hidden">
-            <div class="card-img-wrap">
-              <img
-              src="@(item.Products?.FirstOrDefault()?.ImageUrl ?? "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&q=80")"
-              class="card-img-top" alt="@item.Name" style="height:200px;object-fit:cover;" />
-              <div class="card-badges">
-                <span class="badge badge-primary">@(item.Products?.Count() ?? 0) SP</span>
-              </div>
-            </div>
-          </div>
-          <div class="card-body d-flex flex-column p-4">
-            <h5 class="card-title">@item.Name</h5>
-            <p class="card-text text-muted flex-grow-1">@(item.Description ?? "Danh mục không mô tả.")</p>
-            <div class="d-flex gap-2 mt-auto">
-              <a href="/Category/Display/@item.Id" class="btn btn-outline-primary btn-sm flex-fill">
-                <i class="fa-solid fa-eye me-1"></i>Xem sản phẩm
-              </a>
-              @if (isAdmin)
-              {
-                <div class="dropdown dropstart">
-                  <button class="btn btn-outline-secondary btn-sm dropdown-toggle p-1" type="button"
-                          data-bs-toggle="dropdown">
-                    <i class="fa-solid fa-ellipsis-vertical"></i>
-                  </button>
-                  <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="/Category/Update/@item.Id"><i
-                      class="fa-solid fa-pen me-2"></i>Sửa</a></li>
-                      <li><a class="dropdown-item text-danger" href="/Category/Delete/@item.Id"><i
-                        class="fa-solid fa-trash me-2"></i>Xóa</a></li>
-                      </ul>
-                    </div>
-                  }
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-        @if (!Model.Any())
-        {
-          <div class="col-12 text-center py-5">
-            <i class="fa-solid fa-tags" style="font-size:4rem;color:var(--muted);opacity:.3;"></i>
-            <h4 class="text-muted mt-3">@(isAdmin ? "Chưa có danh mục" : "Chưa có danh mục sản phẩm")</h4>
-            @if (isAdmin)
+<div class="container py-5">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @{
+            string[] categoryIcons = new string[]
             {
-              <a href="/Category/Add" class="btn btn-primary mt-3">Tạo danh mục đầu tiên</a>
-            }
-          </div>
+                "🖥️", "⚡", "🎮", "🧠", "💾", "🔌", "⚡", "📦"
+            };
+            int iconIndex = 0;
         }
-      </div>
+
+        @foreach(var category in Model)
+        {
+            <div class="col" data-aos="fade-up">
+                <a href="/Category/Display/@category.Id" style="text-decoration: none;">
+                    <div class="card-dark p-5 text-center" style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: var(--r); overflow: hidden; position: relative; transition: all .3s; cursor: pointer;">
+                        
+                        <!-- Background gradient -->
+                        <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(0,255,255,.05) 0%, rgba(123,94,167,.05) 100%); opacity: 0; transition: opacity .3s;"></div>
+                        
+                        <!-- Content -->
+                        <div style="position: relative; z-index: 1;">
+                            <div style="width: 80px; height: 80px; background: linear-gradient(135deg, rgba(0,255,255,.1), rgba(123,94,167,.1)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2rem;">
+                                @{
+                                    string GetIcon(string catName) => catName switch
+                                    {
+                                        "CPU" => "⚡",
+                                        "GPU" => "🎮",
+                                        "RAM" => "🧠",
+                                        "Storage" => "💾",
+                                        "Motherboard" => "🔌",
+                                        "PSU" => "⚡",
+                                        "Case" => "📦",
+                                        "Linh kiện" => "🔧",
+                                        _ => "🖥️"
+                                    };
+                                }
+                                @Html.Raw(GetIcon(category.Name))
+                            </div>
+                            
+                            <h3 style="margin: 0 0 8px 0; color: var(--text); font-weight: 700;">
+                                @category.Name
+                            </h3>
+                            
+                            <p class="text-muted" style="margin: 0; font-size: .95rem;">
+                                @((category.Products?.Count() ?? 0) + " sản phẩm")
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        }
     </div>
+
+    @if (!Model.Any())
+    {
+        <div style="text-align: center; padding: 60px 20px;">
+            <i class="fa-solid fa-inbox" style="font-size: 3rem; color: var(--muted); opacity: 0.5; margin-bottom: 16px; display: block;"></i>
+            <p class="text-muted" style="font-size: 1.1rem;">Không tìm thấy danh mục nào</p>
+        </div>
+    }
+</div>
 
